@@ -73,8 +73,8 @@
 				<units>watt/(meter*meter)</units>
 				<doc>Managing the Global Commons, Table 4.9B, pg. 73.</doc>
 <gf>
-<xpts>0</xpts>
-<ypts>0</ypts>
+<xpts>0.0,0.0</xpts>
+<ypts>0.0,0.0</ypts>
 </gf>
 </aux>
 			<aux name="predator_birth_fraction">
