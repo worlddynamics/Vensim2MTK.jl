@@ -4,7 +4,7 @@
 
 using XML
 
-filepath = "C:\\Users\\maelc\\OneDrive\\Documents\\stage\\New_parser_vensim_julia\\Dice.xmile"
+filepath = "C:\\Users\\maelc\\OneDrive\\Documents\\stage\\New_parser_vensim_julia\\exemples\\lokta.xmile"
  # change this to the filepath to the model to translate
 
 
@@ -119,7 +119,9 @@ add_inits(root[3][1])
 _word_separators=Vector{String}(["/","-","+","*","^","(",")",",","<",">","=","!","[","]","{","}"," ","\r","\n","\t"])
 
 _tokenized_ws=Vector{String}(["DIV","MINUS","PLUS","TIME","POW","LP","RP","COMMA","LT","GT","EQUAL","NOT","LB","RB","LCB","RCB"])
-_keywords=Vector{String}(["EXP","LOG","GAME","if_then_else","SMOOTHi","STEP","MAX","MIN","LN","SMOOTH"])
+_keywords=Vector{String}(["EXP","LOG","GAME","if_then_else","SMOOTHi","STEP","MAX","MIN","LN","SMOOTH","ABS","COS","ARCCOS","SIN","ARCSIN","TAN","ARCTAN",
+"GAMMA_LN", "MODULO","RAMP",":AND:",":OR:"
+])
 #this vector can be augmented to add more functions to translate more models; for now it only contains then one necessary to make the "DICE" model work
 function is_in(x,l)
     len=length(l)
@@ -202,9 +204,14 @@ function parsing_prep(s)
 end
 
 
-_keywords2=Vector{String}(["EXP","LOG","GAME","IFTHENELSE","SMOOTH","SMOOTHi","STEP","MAX","MIN","LN","TABLE"]) #keywords, but if_then_else is called IFTHENELSE to match other tokens. this may happen to othe functions added later on.
-_one_arg_fcts=Vector{String}(["EXP","LN","GAME","TABLE"])
-_two_arg_fcts=Vector{String}(["MAX","LOG","MIN","STEP","SMOOTH"])
+_keywords2=Vector{String}(["EXP","LOG","GAME","IFTHENELSE","SMOOTH","SMOOTHi","STEP","MAX","MIN","LN","ABS","TABLE","COS","ARCCOS","SIN","ARCSIN","TAN","ARCTAN",
+"GAMMA_LN", "MODULO","RAMP",":AND:",":OR:"
+
+
+]) #keywords, but if_then_else is called IFTHENELSE to match other tokens. this may happen to othe functions added later on.
+_one_arg_fcts=Vector{String}(["EXP","LN","GAME","TABLE","COS","ARCCOS","SIN","ARCSIN","TAN","ARCTAN",
+"GAMMA_LN"])
+_two_arg_fcts=Vector{String}(["MAX","LOG","MIN","STEP","SMOOTH","MODULO"])
 _three_arg_fcts=Vector{String}(["IFTHENELSE","SMOOTHi"])
 #depending on the number of arguments, function will be parsed differently. 
 
@@ -369,7 +376,7 @@ function sub_detect_fifthpass(ns)
     for i=1:len 
         n=ns[i]
         token,data=n.token,n.data 
-        if ( token=="EQUAL" || token=="LT" || token == "GT" ) && n.children == AstNode[]
+        if ( token=="EQUAL" || token=="LT" || token == "GT" || token == ":AND:"|| token == ":OR:") && n.children == AstNode[]
             return (i)
         end
     end
@@ -565,6 +572,16 @@ function matching(name,ast)
         rh="("*matching(name,c[2])*")"
         return (lh*"=="*rh)
     end
+    if t == ":AND:"
+        lh="("*matching(name,c[1])*")"
+        rh="("*matching(name,c[2])*")"
+        return (lh*"&&"*rh)
+    end
+    if t == ":OR:"
+        lh="("*matching(name,c[1])*")"
+        rh="("*matching(name,c[2])*")"
+        return (lh*"||"*rh)
+    end
     if t == "LN"
         #println("atteindln")
         c="("*matching(name,c[1])*")"
@@ -580,6 +597,42 @@ function matching(name,ast)
         c="("*matching(name,c[1])*")"
         return (c)
     end
+    if t == "ABS"
+        c="("*matching(name,c[1])*")"
+        return  ("abs"*c)
+    end
+    if t == "COS"
+        c="("*matching(name,c[1])*")"
+        return "cos"*c
+    end
+    if t == "ARCCOS"
+        c="("*matching(name,c[1])*")"
+        return "arccos"*c
+    end
+    if t == "SIN"
+        c="("*matching(name,c[1])*")"
+        return "sin"*c
+    end
+    if t == "ARCSIN"
+        c="("*matching(name,c[1])*")"
+        return "arcsin"*c
+    end
+    if t == "TAN"
+        c="("*matching(name,c[1])*")"
+        return "tan"*c
+    end
+    if t == "ARCTAN"
+        c="("*matching(name,c[1])*")"
+        return "arctan"*c
+    end
+    if t == "COSH"
+        c="("*matching(name,c[1])*")"
+        return "cosh"*c
+    end
+    if t == "GAMMA_LN"
+        c="("*matching(name,c[1])*")"
+        return ("loggamma"*c)
+    end
     if t == "MAX"
         lh="("*matching(name,c[1])*")"
         rh="("*matching(name,c[2])*")"
@@ -594,6 +647,11 @@ function matching(name,ast)
         lh="("*matching(name,c[1])*")"
         rh="("*matching(name,c[2])*")"
         return ("log("*rh*","*lh*")")
+    end
+    if t == "MODULO"
+        lh="("*matching(name,c[1])*")"
+        rh="("*matching(name,c[2])*")"
+        return (rh*"%"*lh)
     end
     if t == "STEP"
         lh="("*matching(name,c[1])*")"
@@ -616,7 +674,7 @@ function matching(name,ast)
         tm="("*matching(name,c[3])*")"
         smn="TEMPVARSMOOTHED_"*name
         str="("*fm *"-"*smn*") /"*sm
-        push!(_decl_vars,"\t@variables "*smn*"(t) = "*tm*"\n")
+        push!(_decl_vars,"@variables "*smn*"(t) = "*tm*" [description = "*smn*", created by the \"SMOOTH\" function or an afiliate]\n")
         push!(_decl_eqns,"\t\tD("*smn*") ~ "* str*"\n")
         return (smn)
         
@@ -645,8 +703,8 @@ function eqn_maker!(name,eqn)
     nl=node_convert(tsl)
     ast=parser(nl)[1]
     str=matching(name,ast)
-    push!(_decl_eqns, "\t\t"*name*" ~ "*str*"\n")
-    push!(_decl_vars, "\t@variables "*name*"(t)\n")
+    push!(_decl_eqns, "\t"*name*" ~ "*str*"\n")
+    push!(_decl_vars, "@variables "*name*"(t)  [description = "*name*"]\n")
 end
 
 function eqn_decls(stocks_ind,eqn_ind,root)
@@ -659,15 +717,15 @@ function eqn_decls(stocks_ind,eqn_ind,root)
                 inf=replace(node[4][1].value,Pair(" ","_"))
                 if n==5
                     outf=replace(node[5][1].value,Pair(" ","_"))
-                    eqn="\t\tD("*name*") ~ "* inf*"-"*outf*"\n"
+                    eqn="\tD("*name*") ~ "* inf*"-"*outf*"\n"
                     push!(_decl_eqns,eqn)
                 else
-                    eqn="\t\tD("*name*") ~ "* inf*"\n"
+                    eqn="\tD("*name*") ~ "* inf*"\n"
                     push!(_decl_eqns,eqn)
                 end
             else 
                 outf=replace(node[4][1].value,Pair(" ","_"))
-                eqn="\t\tD("*name*") ~ -"* outf*"\n"
+                eqn="\tD("*name*") ~ -"* outf*"\n"
                 push!(_decl_eqns,eqn)
             end
         end
@@ -816,17 +874,21 @@ end
 function simple_file_writer(_params,_inits,_decl_vars,_decl_eqns,root)
     base_str= 
     "
+    using SpecialFunctions.jl
+    using ModelingToolkit
+    using DifferentialEquations
+
     #variables and parameters of the model (the variable/parameter name \"t\" is forbiden)
 @variables t
 D = Differential(t)
 "
     for (k,v) in _params 
-        str="@parameters "*string(k)*" = "*string(v)*"\n"
+        str="@parameters "*string(k)*" = "*string(v)*" [description = "*string(k)*"]\n"
         base_str = base_str * str
     end
 
     for (k,v) in _inits 
-        str="@variables "*string(k)*"(t) = "*string(v)*"\n"
+        str="@variables "*string(k)*"(t) = "*string(v)*" [description = "*string(k)*"]\n"
         base_str = base_str * str        
     end
 
