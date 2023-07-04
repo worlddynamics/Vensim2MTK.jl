@@ -900,7 +900,7 @@ D = Differential(t)
     
     
     #définition des equations:
-    eqs = [
+eqs = [
     "
 
     for str in _decl_eqns 
@@ -908,17 +908,17 @@ D = Differential(t)
     end
     base_str = base_str *"
     
-    ]
+]
     
     #il faut maintenant définir le solveur: 
     
-    @named sys= ODESystem(eqs)
-    sys= structural_simplify(sys)
-    prob= ODEProblem(sys,[],("*root[2][1][1].value*","*root[2][2][1].value*"))
-    solved=solve(prob)
-    using Plots 
+@named sys= ODESystem(eqs)
+sys= structural_simplify(sys)
+prob= ODEProblem(sys,[],("*root[2][1][1].value*","*root[2][2][1].value*"))
+solved=solve(prob)
+using Plots 
 
-    plot(solved)
+plot(solved)
     "
 end
 
