@@ -1,2 +1,4 @@
 [deps]
+DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 XML = "72c71f33-b9b6-44de-8c94-c961784809e2"
