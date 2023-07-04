@@ -1,0 +1,19 @@
+# This file is machine-generated - editing it directly is not advised
+
+julia_version = "1.9.1"
+manifest_format = "2.0"
+project_hash = "0187bbfc44385ee4e54d6713a7ff39ed7293b230"
+
+[[deps.Mmap]]
+uuid = "a63ad114-7e13-5084-954f-fe012c677804"
+
+[[deps.OrderedCollections]]
+git-tree-sha1 = "d321bf2de576bf25ec4d3e4360faca399afca282"
+uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+version = "1.6.0"
+
+[[deps.XML]]
+deps = ["Mmap", "OrderedCollections"]
+git-tree-sha1 = "cbf82009944525df5b6407bff97ba554b85f20fe"
+uuid = "72c71f33-b9b6-44de-8c94-c961784809e2"
+version = "0.3.0"

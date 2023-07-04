@@ -4,7 +4,7 @@
 
 using XML
 
-filepath = "C:\\Users\\maelc\\OneDrive\\Documents\\stage\\New_parser_vensim_julia\\Dice.xmile"
+filepath = "exemples/lokta.xmile"
  # change this to the filepath to the model to translate
 
 
