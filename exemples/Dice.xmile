@@ -1,0 +1,778 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xmile version="1.0" xmlns="http://docs.oasis-open.org/xmile/ns/XMILE/v1.0">
+	<header>
+		<product version="1.0" lang="en">Vensim</product>
+		<vendor>Ventana Systems, Inc.</vendor>
+		<created>
+		</created>
+		<modified>
+		</modified>
+		<name>
+		</name>
+		<caption>
+		</caption>
+	</header>
+	<sim_specs method="RK4" time_units="year">
+		<start> 1965</start>
+		<stop> 2305</stop>
+		<dt>TIME_STEP=10</dt>
+	</sim_specs>
+	<model>
+		<variables>
+			<stock name="Atmos_UOcean_Temp">
+				<units>DegreesC</units>
+				<doc>Temperature of the Atmosphere and Upper Ocean [T] (degrees C)
+[Cowles, pg. 24]</doc>
+					<eqn>
+					 init_Atmos_UOcean_Temp
+					</eqn>
+					<inflow>
+					Chg A UO Temp
+					</inflow>
+			</stock>
+			<stock name="Capital">
+				<units>$</units>
+				<doc>Capital ($)
+Capital stock in 1989 dollars.
+[Managing Global Commons, pg. 21]</doc>
+					<eqn>
+					 Initial_Capital
+					</eqn>
+					<inflow>
+					Investment
+					</inflow>
+					<outflow>
+					Depreciation
+					</outflow>
+			</stock>
+			<stock name="CO2_in_Atmos">
+				<units>TonC</units>
+				<doc>Greenhouse Gases in Atmosphere [M(t)] (tons carbon equivalent)
+					[Cowles, pg. 21]</doc>
+					<eqn>
+					 init_CO2_in_Atmos
+					</eqn>
+					<inflow>
+					CO2 Net Emiss
+					</inflow>
+					<outflow>
+					CO2 Storage
+					</outflow>
+			</stock>
+			<stock name="CO2_Intens_Decline_Rt">
+				<units>1/year</units>
+				<doc>Rate of Decline of Greenhouse Gas Intensity of Output [g-sigma] (1/year)
+Note that Nordhaus decompounds the decadal rate of .1168 to yield an annual rate of .0125. This does
+not work with time steps smaller than Nordhaus' 10 years, so I have simply divided by 10 to convert
+ the decadal rate to an annual rate.
+[Managing Global Commons, pg. 21]</doc>
+					<eqn>
+					 init_co2_intens_decline_rt
+					</eqn>
+					<outflow>
+					CO2 Intens Dec Rt Decline Rt
+					</outflow>
+			</stock>
+			<stock name="CO2_Intensity_of_Output">
+				<units>TonC/$</units>
+				<doc>Greenhouse Gas Intensity of Output [sigma(t)] (tons carbon equivalent/$)
+[Managing Global Commons, pg. 21] 
+Conflicts with value reported on Cowles, pg. 24: .5368*.9875^(TIME-1990)/1000 = .7352/1000</doc>
+					<eqn>
+					 init_CO2_intensity_of_output
+					</eqn>
+					<outflow>
+					Decline CO2 Intens
+					</outflow>
+			</stock>
+			<stock name="Cum_Disc_Utility">
+				<units>utiles</units>
+				<doc>Cumulative Discounted Utility (log$)
+This is Nordhaus' objective function. The results in [Science, Table 1] apparently accumulate only
+         the period from 1990-2045.
+[Cowles, pg. 15]</doc>
+					<eqn>
+					 0
+					</eqn>
+					<inflow>
+					Discounted Utility
+					</inflow>
+			</stock>
+			<stock name="Deep_Ocean_Temp">
+				<units>DegreesC</units>
+				<doc>Temperature of the Deep Ocean [T*] (degrees C)
+[Cowles, pg. 24]</doc>
+					<eqn>
+					init_Deep_Ocean_Temp
+					</eqn>
+					<inflow>
+					Chg DO Temp
+					</inflow>
+			</stock>
+			<stock name="Fact_Prod_Growth_Rt">
+				<units>1/year</units>
+				<doc>Growth Rate of Factor Productivity [gA(t)] (1/year)
+Growth rate declines over time. Value reported in [Cowles, pg. 17]: .0152 for period 1965-1987,
+        matches statement in [Science, pg. 1317] that average was 1.3% from 1965-1989, with an
+         11%/decade rate of decline.
+Note that Nordhaus decompounds the decadal rate of .150 to yield an annual rate of .0141;
+ I have simply divided by 10 to convert the decadal rate to an annual rate.
+[Managing Global Commons, pg. 21]
+[Managing the Global Commons, pg. 21]</doc>
+					<eqn>
+					 Init_Fact_Prod_Growth_Rt 
+					</eqn>
+					<outflow>
+					Fact Prod Gr Rt Decline Rt
+					</outflow>
+			</stock>
+			<stock name="Factor_Productivity">
+				<units>dmnl</units>
+				<doc>Total Factor Productivity [A(t)] (dimensionless)
+May be interpreted as level of technology.
+[Cowles pg. 17]</doc>
+					<eqn>
+					 1
+					</eqn>
+					<inflow>
+					Fact Prod Incr Rt
+					</inflow>
+			</stock>
+			<stock name="Pop_Growth_Rate">
+				<units>1/year</units>
+				<doc>Population Growth Rate [gpop(t)] (1/year)
+Note that Nordhaus decompounds the decadal rate of .223 to yield an annual rate of .0203;
+I have simply divided by 10 to convert the decadal rate to an annual rate.
+[Managing Global Commons, pg. 21]</doc>
+					<eqn>
+					 Init_Pop_Growth_Rate
+					</eqn>
+					<outflow>
+					Decline Pop Gr Rt
+					</outflow>
+			</stock>
+			<stock name="Population">
+				<units>person</units>
+				<doc>Population [L(t)] (persons)
+[Cowles, pg. 16]</doc>
+					<eqn>
+					Initial_Population
+					</eqn>
+					<inflow>
+					Net Pop Incr
+					</inflow>
+			</stock>
+			<aux name="Capital_Labor_Ratio">
+				<units>$/person</units>
+				<doc>Ratio of Capital Inputs to Labor Inputs ($/person)</doc>
+					<eqn> Capital/Population					</eqn>
+			</aux>
+			<aux name="Capital_Life">
+				<units>years</units>
+				<doc></doc>
+					<eqn>
+	1/Depreciation_Rate					</eqn>
+			</aux>
+			<aux name="Capital_Output_Ratio">
+				<units>year</units>
+				<doc>Capital per Unit Output ($ per $/year)</doc>
+					<eqn> Capital/Output					</eqn>
+			</aux>
+			<aux name="Chg_A_UO_Temp">
+				<units>DegreesC/year</units>
+				<doc>Change in the Atmosphere & Upper Ocean Temperature (degrees C/yr)
+[Cowles, pg. 27]</doc>
+					<eqn> (Radiative_Forcing-Feedback_Cooling-Heat_Transfer)/A_UO_Heat_Cap					</eqn>
+			</aux>
+			<aux name="Chg_DO_Temp">
+				<units>DegreesC/year</units>
+				<doc>Change in the Deep Ocean Temperature (degrees C/yr)
+[Cowles, pg. 30]</doc>
+					<eqn> Heat_Transfer/DO_Heat_Cap					</eqn>
+			</aux>
+			<aux name="Climate_Damage_Frac">
+				<units>dmnl</units>
+				<doc>Fraction of Output lost to combating Climate Change (1/Degrees C^2)</doc>
+					<eqn> 
+1/(1+Climate_Damage_Scale*(Atmos_UOcean_Temp/Reference_Temperature)^Climate_Damage_Nonlinearity)					</eqn>
+			</aux>
+			<aux name="Climate_Damages">
+				<units>$/year</units>
+				<doc>Flow of damages from climate change.</doc>
+					<eqn> Reference_Output*(1-Climate_Damage_Frac)					</eqn>
+			</aux>
+			<aux name="Climate_Feedback_Param">
+				<units>watt/(DegreesC*meter*meter)</units>
+				<doc>Climate Feedback Parameter [lambda] (W-m^2/degree C)
+The crucial climate sensitivity parameter - determines gain of feedback from temperature increase
+         and thus determines equilibrium response to forcing.
+The Schneider-Thompson 2-stock model uses 1.33 [Cowles, Table III-B1].
+[Managing Global Commons, pg. 21]</doc>
+					<eqn> CO2_Rad_Force_Coeff/Climate_Sensitivity					</eqn>
+			</aux>
+			<aux name="CO2_Emiss">
+				<units>TonC/year</units>
+				<doc>Greenhouse Gas Emissions [E(t)] (tons carbon equivalent/year)
+[Cowles, pg. 20]</doc>
+					<eqn>
+	(1-GHG_Reduction_Frac)*CO2_Intensity_of_Output*Output					</eqn>
+			</aux>
+			<aux name="CO2_Intens_Capital">
+				<units>TonC/(year*$)</units>
+				<doc>CO2 and CFC Emissions per Unit of Capital (tons carbon equiv/year/$)</doc>
+					<eqn> CO2_Emiss/Capital					</eqn>
+			</aux>
+			<aux name="CO2_Intens_Dec_Rt_Decline_Rt">
+				<units>1/(year*year)</units>
+				<doc></doc>
+					<eqn> CO2_Intens_Decline_Rt*Fact_Prod_Gr_Rt_Dec_Rt					</eqn>
+			</aux>
+			<aux name="CO2_Net_Emiss">
+				<units>TonC/year</units>
+				<doc>Net Greenhouse Gas Emissions (tons carbon equivalent/year)
+Greenhouse gas emissions less short-run uptake from the atmosphere.
+[Cowles, pg. 21]</doc>
+					<eqn> Atmos_Retention*CO2_Emiss					</eqn>
+			</aux>
+			<aux name="CO2_Rad_Forcing">
+				<units>watt/(meter*meter)</units>
+				<doc>Radiative Forcing from CO2 [F(t)] (W/m^2)
+Additional surface warming from accumulation of CO2.
+[Cowles, pg. 22]</doc>
+					<eqn> CO2_Rad_Force_Coeff*LOG(CO2_in_Atmos/Preindustrial_CO2,2)					</eqn>
+			</aux>
+			<aux name="CO2_Storage">
+				<units>TonC/year</units>
+				<doc>Greenhouse Gas removal from the atmosphere and storage by long-term processes. (tons carbon
+         equivalent/year)
+[Cowles, pg. 21]</doc>
+					<eqn> (CO2_in_Atmos-Preindustrial_CO2)*Rate_of_CO2_Transfer					</eqn>
+			</aux>
+			<aux name="Cons_Growth_Rate">
+				<units>fraction/year</units>
+				<doc></doc>
+					<eqn>
+	LN(Consumption_per_Cap/SMOOTH(Consumption_per_Cap,TIME_STEP))/TIME_STEP					</eqn>
+			</aux>
+			<aux name="Consumption">
+				<units>$/year</units>
+				<doc>Consumption ($/year)
+Output less investment (savings).</doc>
+					<eqn> Output-Investment					</eqn>
+			</aux>
+			<aux name="Consumption_per_Cap">
+				<units>$/(year*person)</units>
+				<doc>Consumption per Capita ($/person/year)</doc>
+					<eqn> Consumption/Population					</eqn>
+			</aux>
+			<aux name="Decline_CO2_Intens">
+				<units>TonC/(year*$)</units>
+				<doc>Decline of GHG Intensity of Output (tons carbon equivalent/$/year)
+[Cowles, pg. 20]</doc>
+					<eqn> CO2_Intensity_of_Output*CO2_Intens_Decline_Rt					</eqn>
+			</aux>
+			<aux name="Decline_Pop_Gr_Rt">
+				<units>1/(year*year)</units>
+				<doc>Decline of Population Growth Rate (1/year/year)</doc>
+					<eqn> Pop_Growth_Rate*Pop_Gr_Rt_Decline_Rt					</eqn>
+			</aux>
+			<aux name="Depreciation">
+				<units>$/year</units>
+				<doc>Depreciation ($/year)</doc>
+					<eqn> Capital*Depreciation_Rate					</eqn>
+			</aux>
+			<aux name="Desired_Capital_Growth_Rate">
+				<units>1/year</units>
+				<doc>Desired capital growth rate. Assumes that agents attempt to follow a heuristic for investment that's roughly consistent with the Ramsey rule for consistency of the time path of consumption growth with marginal utility. Yields investment that's generally consistent with optimal formulations, though there are some small differences, particularly in later years of the simulation where truncation affects the optimal solution.</doc>
+					<eqn>
+	((Expected_Return-Rate_of_Time_Pref)/Rate_of_Inequal_Aversion+Pop_Growth_Rate)					</eqn>
+			</aux>
+			<aux name="Discount_Factor">
+				<units>dmnl</units>
+				<doc></doc>
+					<eqn> EXP(-Rate_of_Time_Pref*(Time-Base_Year))					</eqn>
+			</aux>
+			<aux name="Discounted_Utility">
+				<units>utiles/year</units>
+				<doc>Discounted Current Utility (log$/year)
+Current Utility discounted to 1989.</doc>
+					<eqn>
+	Total_Pop_Utility*Discount_Factor					</eqn>
+			</aux>
+			<aux name="DO_Heat_Cap">
+				<units>year*watt/(DegreesC*meter*meter)</units>
+				<doc>Deep Ocean Heat Capacity per Unit Area [R2] (W-yr/m^2/degrees C)
+Note: Managing Global Commons uses .44*Heat_Trans_Coeff = 220; Cowles report uses 223.7 (page 30).
+[Managing Global Commons, pg. 21]</doc>
+					<eqn> Heat_Capacity_Ratio*Heat_Trans_Coeff					</eqn>
+			</aux>
+			<aux name="Expected_Return">
+				<units>1/year</units>
+				<doc>Expected return on capital investment; equals the current return plus extrapolation of the historic trend in returns over the lifetime of capital.</doc>
+					<eqn>
+	Marg_Return_Capital+Expected_Return_Trend*Capital_Life					</eqn>
+			</aux>
+			<aux name="Expected_Return_Trend">
+				<units>1/(year*year)</units>
+				<doc>Expected linear trend in return on capital investment.</doc>
+					<eqn>
+	SMOOTHi((Marg_Return_Capital-Smoothed_Return)/smoothing_time,smoothing_time
+	,Initial_Return_Trend)					</eqn>
+			</aux>
+			<aux name="Fact_Prod_Gr_Rt_Decline_Rt">
+				<units>1/(year*year)</units>
+				<doc>Decline of Factor Productivity Growth Rate (1/year/year)</doc>
+					<eqn> Fact_Prod_Growth_Rt*Fact_Prod_Gr_Rt_Dec_Rt					</eqn>
+			</aux>
+			<aux name="Fact_Prod_Incr_Rt">
+				<units>1/year</units>
+				<doc>Change in Factor Productivity (1/year)</doc>
+					<eqn> Factor_Productivity*Fact_Prod_Growth_Rt					</eqn>
+			</aux>
+			<aux name="Feedback_Cooling">
+				<units>watt/(meter*meter)</units>
+				<doc>Heat loss of the atmosphere/upper ocean system from feedback effects of warming (i.e. increased
+         blackbody radiation).
+[Cowles, pg. 27]</doc>
+					<eqn> Atmos_UOcean_Temp*Climate_Feedback_Param					</eqn>
+			</aux>
+			<aux name="GHG_Red_Cost_Frac">
+				<units>dmnl</units>
+				<doc>Fraction of Output devoted to cost of GHG emissions reductions (dimensionless)</doc>
+					<eqn>
+	1-Red_Cost_Scale*if_then_else(GHG_Reduction_Frac>0,GHG_Reduction_Frac^Red_Cost_Nonlinearity
+	,0)					</eqn>
+			</aux>
+			<aux name="GHG_Reduction_Frac">
+				<units>dmnl</units>
+				<doc>Fraction of Greenhouse Gas Emissions Abated [mu(t)]</doc>
+					<eqn> GAME (
+	STEP(1,Reduction_Start_Time)
+	*MAX(0,MIN(1,constant_reduction+concentration_sensitivity*(CO2_in_Atmos-Preindustrial_CO2)/Preindustrial_CO2
+	+emissions_sensitivity*(uncontrolled_emissions-reference_emissions)/reference_emissions)))					</eqn>
+			</aux>
+			<aux name="Heat_Transfer">
+				<units>watt/(meter*meter)</units>
+				<doc>Heat Transfer from the Atmosphere & Upper Ocean to the Deep Ocean</doc>
+					<eqn> Temp_Diff*DO_Heat_Cap/Heat_Trans_Coeff					</eqn>
+			</aux>
+			<aux name="Indicated_Interest_Rate">
+				<units>1/year</units>
+				<doc></doc>
+					<eqn>
+	Rate_of_Time_Pref+Cons_Growth_Rate*Rate_of_Inequal_Aversion					</eqn>
+			</aux>
+			<aux name="Investment">
+				<units>$/year</units>
+				<doc>Gross Investment ($/year)</doc>
+					<eqn>
+	MIN(Output,Depreciation+Capital*Desired_Capital_Growth_Rate)					</eqn>
+			</aux>
+			<aux name="Investment_Fraction">
+				<units>dmnl</units>
+				<doc>Observed fraction of output invested (savings rate)</doc>
+					<eqn>
+	Investment/Output					</eqn>
+			</aux>
+			<aux name="Labor_Output_Ratio">
+				<units>year*person/$</units>
+				<doc>Ratio of Labor to Output (persons/$)</doc>
+					<eqn> Population/Output					</eqn>
+			</aux>
+			<aux name="Marg_Prod_Capital">
+				<units>1/year</units>
+				<doc>Marginal Productivity of Capital</doc>
+					<eqn> Capital_Elast_Output*Output/Capital					</eqn>
+			</aux>
+			<aux name="Marg_Prod_Carbon">
+				<units>$/TonC</units>
+				<doc>Marginal Productivity of CO2 Emissions</doc>
+					<eqn>
+	Reference_Output/Reference_CO2_Emissions*Red_Cost_Scale*Red_Cost_Nonlinearity
+	*if_then_else(GHG_Reduction_Frac>0,(GHG_Reduction_Frac)^(Red_Cost_Nonlinearity-1),0)					</eqn>
+			</aux>
+			<aux name="Marg_Return_Capital">
+				<units>1/year</units>
+				<doc>Marginal Return to Capital
+Equals the marginal product of capital less depreciation.</doc>
+					<eqn> Marg_Prod_Capital-Depreciation_Rate					</eqn>
+			</aux>
+			<aux name="Net_CC_Impact">
+				<units>dmnl</units>
+				<doc>Net Climate Change Impact [Omega(t)] (dimensionless)
+The fraction of output lost to GHG emissions reduction and climate change damage costs.
+[Cowles, pg. 13]</doc>
+					<eqn>
+	GHG_Red_Cost_Frac*Climate_Damage_Frac					</eqn>
+			</aux>
+			<aux name="Net_Investment">
+				<units>$/year</units>
+				<doc>Net Investment
+Investment less depreciation</doc>
+					<eqn> Investment-Depreciation					</eqn>
+			</aux>
+			<aux name="Net_Pop_Incr">
+				<units>person/year</units>
+				<doc>Net Population Increase (persons/year)</doc>
+					<eqn> Population*Pop_Growth_Rate					</eqn>
+			</aux>
+			<aux name="Net_Savings_Rate">
+				<units>dmnl</units>
+				<doc>Net Savings Rate
+Equal to the ratio of net investment to output.</doc>
+					<eqn> Net_Investment/Output					</eqn>
+			</aux>
+			<aux name="Output">
+				<units>$/year</units>
+				<doc>Output [Q(t)] ($/year)
+Cobb-Douglas capital-labor formulation.
+[Cowles, pgs. 17 & 24]</doc>
+					<eqn> Reference_Output*Net_CC_Impact					</eqn>
+			</aux>
+			<aux name="Pop_Gr_Rt_Decline_Rt">
+				<units>1/year</units>
+				<doc>Rate of Decline of Population Growth Rate [delta-pop] (1/year)
+19.5 % per decade. [Cowles, pg. 16] Real data looks closer to 10 % per decade before 1990.
+Note that Nordhaus decompounds the decadal rate of .195 to yield an annual rate of .02; 
+I have simply divided by 10 to convert the decadal rate to an annual rate.
+[Managing Global Commons, pg. 21]</doc>
+					<eqn> Init_Pop_Growth_Rate/LN(Ultimate_Population/Initial_Population)					</eqn>
+			</aux>
+			<aux name="Radiative_Forcing">
+				<units>watt/(meter*meter)</units>
+				<doc>Radiative Forcing from All GHGs (W/m^2)
+Additional surface warming from accumulation of CO2 & CFCs.
+[Cowles, Sec. III.F]</doc>
+					<eqn>
+	CO2_Rad_Forcing+Other_GHG_Rad_Forcing(Time/one_year)					</eqn>
+			</aux>
+			<aux name="Rate_of_CO2_Transfer">
+				<units>1/year</units>
+				<doc>Rate of Storage of Atmospheric Greenhouse Gases [delta-m] (1/year)
+Inverse yields average residence time of gases (120 years). Note that, like the marginal
+atmospheric retention, the stability of this factor is questionable.
+[Cowles, pg. 21]</doc>
+					<eqn> 1/CO2_Transfer_Time					</eqn>
+			</aux>
+			<aux name="Reduction_Costs">
+				<units>$/year</units>
+				<doc>Flow of greenhouse gas abatement costs.</doc>
+					<eqn> (1-GHG_Red_Cost_Frac)*Reference_Output					</eqn>
+			</aux>
+			<aux name="Reference_CO2_Emissions">
+				<units>TonC/year</units>
+				<doc>Reference CO2 Emissions
+Emissions at normal CO2 intensity, with no abatement.</doc>
+					<eqn> Reference_Output*CO2_Intensity_of_Output					</eqn>
+			</aux>
+			<aux name="Reference_Output">
+				<units>$/year</units>
+				<doc>Reference Output before effects of climate damage and emissions abatement are considered</doc>
+					<eqn> Output_in_1965*Factor_Productivity*(Capital/Initial_Capital)^Capital_Elast_Output
+*(Population/Initial_Population)^(1-Capital_Elast_Output)					</eqn>
+			</aux>
+			<aux name="Smoothed_Return">
+				<units>1/year</units>
+				<doc>Smoothed historic returns; initialized to account for historic trend.</doc>
+					<eqn>
+	SMOOTHi(Marg_Return_Capital,smoothing_time
+	,Marg_Return_Capital-Initial_Return_Trend*smoothing_time)					</eqn>
+			</aux>
+			<aux name="Temp_Diff">
+				<units>DegreesC</units>
+				<doc>Temperature Difference between Upper and Deep Ocean (degrees C)</doc>
+					<eqn> Atmos_UOcean_Temp-Deep_Ocean_Temp					</eqn>
+			</aux>
+			<aux name="Total_Pop_Utility">
+				<units>utiles/year</units>
+				<doc></doc>
+					<eqn>
+	Utility*Population					</eqn>
+			</aux>
+			<aux name="uncontrolled_emissions">
+				<units>TonC/year</units>
+				<doc></doc>
+					<eqn>
+	Reference_Output*CO2_Intensity_of_Output					</eqn>
+			</aux>
+			<aux name="Utility">
+				<units>utiles/(year*person)</units>
+				<doc>Current Utility [U(t)] (utiles/year)
+Reduces to Logarithmic or Bernoullian utility function:
+Population*(Log(Consumption_per_Cap))
+when the Rate of Inequality Aversion -> 1
+Note that doubling your population with half the consumption per capita is an improvement with this
+         formula; this works only when population is exogenous.
+[Cowles, pg. 16]</doc>
+					<eqn>
+	Utility_Coeff
+	*if_then_else(Rate_of_Inequal_Aversion=1
+	,LN(Consumption_per_Cap/Ref_Cons_per_Cap),
+	((Consumption_per_Cap/Ref_Cons_per_Cap)^(1-Rate_of_Inequal_Aversion)-1)
+	/(1-Rate_of_Inequal_Aversion))					</eqn>
+			</aux>
+			<aux name="Other_GHG_Rad_Forcing">
+				<units>watt/(meter*meter)</units>
+				<doc>Managing the Global Commons, Table 4.9B, pg. 73.</doc>
+<gf>
+<xpts>1965.000000,1975.000000,1985.000000,1995.000000,2005.000000,2015.000000,2025.000000,2035.000000,2045.000000,2055.000000,2065.000000,2075.000000,2085.000000,2095.000000,2105.000000</xpts>
+<ypts>0.410000,0.500000,0.600000,0.700000,0.780000,0.870000,0.960000,1.050000,1.140000,1.200000,1.250000,1.290000,1.320000,1.350000,1.360000</ypts>
+</gf>
+			</aux>
+			<aux name="A_UO_Heat_Cap">
+				<units>year*watt/(DegreesC*meter*meter)</units>
+				<doc>Atmosphere & Upper Ocean Heat Capacity per Unit Area [1/R1] (W-yr/m^2/degrees C)
+Note: equals 1/0.0226
+[Managing the Global Commons, pg. 21]</doc>
+					<eqn> 44.248					</eqn>
+			</aux>
+			<aux name="Atmos_Retention">
+				<units>dmnl</units>
+				<doc>Atmospheric Retention Fraction [beta] (dimensionless)
+Fraction of Greenhouse Gas Emissions which accumulate in the atmosphere.
+[Cowles, pg. 21]</doc>
+					<eqn> 0.64					</eqn>
+			</aux>
+			<aux name="Base_Year">
+				<units>year</units>
+				<doc>Base Year for Discounting (year)
+Model is denominated in 1989 dollars, and discounting is performed relative to 1989.</doc>
+					<eqn> 1989					</eqn>
+			</aux>
+			<aux name="Capital_Elast_Output">
+				<units>dmnl</units>
+				<doc>Capital Elasticity of Output [alpha] (dimensionless)
+Derived from share of capital in national income.
+[Cowles, pg. 17]</doc>
+					<eqn> 0.25					</eqn>
+			</aux>
+			<aux name="Climate_Damage_Nonlinearity">
+				<units>dmnl</units>
+				<doc>Nonlinearity of Climate Damage Cost Fraction [Theta2] (dimensionless)
+[Cowles, pg. 13 & 24]</doc>
+					<eqn> 2					</eqn>
+			</aux>
+			<aux name="Climate_Damage_Scale">
+				<units>dmnl</units>
+				<doc>Climate Damage Fraction at Reference Temperature [part of Nordhaus' variable Theta1] (dimensionless)
+[Managing Global Commons, pg. 18 and 21]</doc>
+					<eqn> 0.013					</eqn>
+			</aux>
+			<aux name="Climate_Sensitivity">
+				<units>DegreesC</units>
+				<doc>Equilibrium temperature change in response to a 2xCO2 equivalent change in radiative forcing</doc>
+					<eqn>2.908					</eqn>
+			</aux>
+			<aux name="CO2_Rad_Force_Coeff">
+				<units>watt/(meter*meter)</units>
+				<doc>Coefficient of Radiative Forcing from CO2 (W/m^2)
+Coeff. of additional surface warming from accumulation of CO2.
+[Cowles, pg. 22]</doc>
+					<eqn> 4.1					</eqn>
+			</aux>
+			<aux name="CO2_Transfer_Time">
+				<units>year</units>
+				<doc>Average residence time of net CO2 emissions.</doc>
+					<eqn> 120					</eqn>
+			</aux>
+			<aux name="concentration_sensitivity">
+				<units>dmnl</units>
+				<doc></doc>
+					<eqn>
+	0					</eqn>
+			</aux>
+			<aux name="constant_reduction">
+				<units>dmnl</units>
+				<doc></doc>
+					<eqn>
+	0					</eqn>
+			</aux>
+			<aux name="Depreciation_Rate">
+				<units>1/year</units>
+				<doc>Depreciation Rate [delta-k] (1/year)
+Note that Nordhaus assumes a 10-year capital life, then chooses a value of 0.065 to correct for the
+lack of compounding in the 10-year time step he uses. This is simply wrong, as the capital stock has
+an inflow as well as an outflow, and it is the net rate (investment-depreciation) that must be
+         compounded.
+Using a value of 0.065 results in an average residence time of units in the capital stock of
+         15
+years, even with the 10-year time step. I have preserved the value 0.065 for replication; a 15-year
+         capital
+life is perfectly reasonable anyway.
+[Managing Global Commons, pg. 21]</doc>
+					<eqn> 0.065					</eqn>
+			</aux>
+			<aux name="emissions_sensitivity">
+				<units>dmnl</units>
+				<doc></doc>
+					<eqn>
+	0					</eqn>
+			</aux>
+			<aux name="Fact_Prod_Gr_Rt_Dec_Rt">
+				<units>1/year</units>
+				<doc>Rate of Decline of Factor Productivity Growth Rate [delta-A] (1/year/year)
+Factor productivity growth rate declines 11% per decade.
+[Cowles, pg. 18]</doc>
+					<eqn> 0.011					</eqn>
+			</aux>
+			<aux name="Heat_Capacity_Ratio">
+				<units>watt/(DegreesC*meter*meter)</units>
+				<doc>Ratio of Thermal Capacity of Deep Ocean to Heat Transfer Time Constant [R2/Tau12]
+[Managing Global Commons, pg. 21]</doc>
+					<eqn> 0.44					</eqn>
+			</aux>
+			<aux name="Heat_Trans_Coeff">
+				<units>year</units>
+				<doc>Heat Transfer Coefficient [tau12] (years)
+Coefficient of heat transfer between the atmosphere & upper ocean and the deep ocean. May be
+        interpreted as a mixing time constant. Schneider & Thompson use a slightly higher
+         estimate of 550.
+[Cowles, pg. 31]</doc>
+					<eqn> 500					</eqn>
+			</aux>
+			<aux name="init_Atmos_UOcean_Temp">
+				<units>DegreesC</units>
+				<doc>Initial Temperature of the Atmosphere and Upper Ocean [T] (degrees C)
+[Cowles, pg. 24]</doc>
+					<eqn>
+	0.2					</eqn>
+			</aux>
+			<aux name="init_CO2_in_Atmos">
+				<units>TonC</units>
+				<doc>Initial Greenhouse Gases in Atmosphere [M(t)] (tons carbon equivalent)
+[Cowles, pg. 21]</doc>
+					<eqn>
+	6.77e+11					</eqn>
+			</aux>
+			<aux name="init_co2_intens_decline_rt">
+				<units>1/year</units>
+				<doc></doc>
+					<eqn> 0.01168					</eqn>
+			</aux>
+			<aux name="init_CO2_intensity_of_output">
+				<units>TonC/$</units>
+				<doc>Initial Greenhouse Gas Intensity of Output [sigma(t)] (tons carbon equivalent/$)
+[Managing Global Commons, pg. 21] 
+Conflicts with value reported on Cowles, pg. 24: .5368*.9875^(TIME-1990)/1000 = .7352/1000</doc>
+					<eqn>
+	0.000519					</eqn>
+			</aux>
+			<aux name="init_Deep_Ocean_Temp">
+				<units>DegreesC</units>
+				<doc>Temperature of the Deep Ocean [T*] (degrees C)
+[Cowles, pg. 24]</doc>
+					<eqn>
+	0.1					</eqn>
+			</aux>
+			<aux name="Init_Fact_Prod_Growth_Rt">
+				<units>1/year</units>
+				<doc></doc>
+					<eqn>
+	0.015					</eqn>
+			</aux>
+			<aux name="Init_Pop_Growth_Rate">
+				<units>1/year</units>
+				<doc>Initial Population Growth Rate [gpop(0)]</doc>
+					<eqn> 0.0223					</eqn>
+			</aux>
+			<aux name="Initial_Capital">
+				<units>$</units>
+				<doc></doc>
+					<eqn> 1.6e+13					</eqn>
+			</aux>
+			<aux name="Initial_Population">
+				<units>person</units>
+				<doc>Initial Population [L(0)]</doc>
+					<eqn> 3.369e+09					</eqn>
+			</aux>
+			<aux name="Initial_Return_Trend">
+				<units>1/(year*year)</units>
+				<doc>Initial trend in returns; set for consistency with returns circa 1965.</doc>
+					<eqn>
+	-0.00054					</eqn>
+			</aux>
+			<aux name="one_year">
+				<units>year</units>
+				<doc></doc>
+					<eqn>
+	1					</eqn>
+			</aux>
+			<aux name="Output_in_1965">
+				<units>$/year</units>
+				<doc>Output in 1965 ($/yr)
+[Managing Global Commons, pg. 21]</doc>
+					<eqn> 8.519e+12					</eqn>
+			</aux>
+			<aux name="Preindustrial_CO2">
+				<units>TonC</units>
+				<doc></doc>
+					<eqn> 5.9e+11					</eqn>
+			</aux>
+			<aux name="Rate_of_Inequal_Aversion">
+				<units>dmnl</units>
+				<doc>Rate of Inequality Aversion [alpha] (dimensionless)
+Measure of marginal utility or social valuation of different levels of consumption.
+[Cowles, pg. 16]</doc>
+					<eqn> 1					</eqn>
+			</aux>
+			<aux name="Rate_of_Time_Pref">
+				<units>1/year</units>
+				<doc>Pure Rate of Social Time Preference [rho] (1/year)
+The social discount rate.
+[Cowles, pg. 15]</doc>
+					<eqn> 0.03					</eqn>
+			</aux>
+			<aux name="Red_Cost_Nonlinearity">
+				<units>dmnl</units>
+				<doc>Nonlinearity of GHG Reduction Cost [b2] (dimensionless)
+[Cowles, pg. 13 & 24]</doc>
+					<eqn> 2.887					</eqn>
+			</aux>
+			<aux name="Red_Cost_Scale">
+				<units>dmnl</units>
+				<doc>Scale of GHG Reduction Cost [b1] (dimensionless)
+[Cowles, pg. 13 & 24]</doc>
+					<eqn> 0.0686					</eqn>
+			</aux>
+			<aux name="Reduction_Start_Time">
+				<units>year</units>
+				<doc>! Note that Nordhaus' original reductions start earlier.</doc>
+					<eqn>
+	2010					</eqn>
+			</aux>
+			<aux name="Ref_Cons_per_Cap">
+				<units>$/(year*person)</units>
+				<doc>Reference Consumption per Capita</doc>
+					<eqn> 1000					</eqn>
+			</aux>
+			<aux name="reference_emissions">
+				<units>TonC/year</units>
+				<doc></doc>
+					<eqn>
+	5e+09					</eqn>
+			</aux>
+			<aux name="Reference_Temperature">
+				<units>DegreesC</units>
+				<doc>Reference Temperature for Calculation of Climate Damages [part of Nordhaus' variable theta1]
+[Managing Global Commons, pg. 18 and 21]</doc>
+					<eqn> 3					</eqn>
+			</aux>
+			<aux name="smoothing_time">
+				<units>years</units>
+				<doc>Time for smoothing return expectations.</doc>
+					<eqn>
+	20					</eqn>
+			</aux>
+			<aux name="Ultimate_Population">
+				<units>person</units>
+				<doc>Ultimate population level (after demographic transition).</doc>
+					<eqn> 1.0572e+10					</eqn>
+			</aux>
+			<aux name="Utility_Coeff">
+				<units>utiles/(year*person)</units>
+				<doc>Reference Rate of Utility Generation (utiles/person/year)</doc>
+					<eqn> 1					</eqn>
+			</aux>
+		</variables>
+	</model>
+</xmile>

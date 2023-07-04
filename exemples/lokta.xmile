@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xmile version="1.0" xmlns="http://docs.oasis-open.org/xmile/ns/XMILE/v1.0">
+	<header>
+		<product version="1.0" lang="en">Vensim</product>
+		<vendor>Ventana Systems, Inc.</vendor>
+		<created>
+		</created>
+		<modified>
+		</modified>
+		<name>
+		</name>
+		<caption>
+		</caption>
+	</header>
+	<sim_specs method="RK4" time_units="seasons">
+		<start> 0</start>
+		<stop> 12</stop>
+		<dt> 0.03125</dt>
+	</sim_specs>
+	<model>
+		<variables>
+			<stock name="Predator_Population">
+				<units></units>
+				<doc></doc>
+					<eqn>
+					15
+					</eqn>
+					<inflow>
+					predator births
+					</inflow>
+					<outflow>
+					predator deaths
+					</outflow>
+			</stock>
+			<stock name="Prey_Population">
+				<units></units>
+				<doc></doc>
+					<eqn>
+					100
+					</eqn>
+					<inflow>
+					prey births
+					</inflow>
+					<outflow>
+					prey deaths
+					</outflow>
+			</stock>
+			<aux name="predator_births">
+				<units></units>
+				<doc></doc>
+					<eqn>
+	(predator_birth_fraction*Prey_Population)*Predator_Population					</eqn>
+			</aux>
+			<aux name="predator_deaths">
+				<units></units>
+				<doc></doc>
+					<eqn>
+	predator_death_proportionality_constant*Predator_Population					</eqn>
+			</aux>
+			<aux name="prey_births">
+				<units></units>
+				<doc></doc>
+					<eqn>
+	prey_birth_fraction*Prey_Population					</eqn>
+			</aux>
+			<aux name="prey_deaths">
+				<units></units>
+				<doc></doc>
+					<eqn>
+	(prey_death_proportionality_constant*Predator_Population)*Prey_Population					</eqn>
+			</aux>
+						<aux name="PARAMETERS SEPARATOR">
+				<units>watt/(meter*meter)</units>
+				<doc>Managing the Global Commons, Table 4.9B, pg. 73.</doc>
+<gf>
+<xpts>0</xpts>
+<ypts>0</ypts>
+</gf>
+</aux>
+			<aux name="predator_birth_fraction">
+				<units></units>
+				<doc></doc>
+					<eqn>
+	0.01					</eqn>
+			</aux>
+			<aux name="predator_death_proportionality_constant">
+				<units></units>
+				<doc></doc>
+					<eqn>
+	1.05					</eqn>
+			</aux>
+			<aux name="prey_birth_fraction">
+				<units></units>
+				<doc></doc>
+					<eqn>
+	2					</eqn>
+			</aux>
+			<aux name="prey_death_proportionality_constant">
+				<units></units>
+				<doc></doc>
+					<eqn>
+	0.02					</eqn>
+			</aux>
+		</variables>
+	</model>
+</xmile>
