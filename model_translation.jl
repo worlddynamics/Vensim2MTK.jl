@@ -1,10 +1,8 @@
-# important information: for now, it is necessary to separate the parameters from the equations with at least one table, that may be empty.
-
-
+# important information: for now, it is necessary to separate the parameters from the equations with at least one table in the xml file, that may be empty.
 
 using XML
 
-filepath = "C:\\Users\\maelc\\OneDrive\\Documents\\stage\\New_parser_vensim_julia\\exemples\\lokta.xmile"
+filepath = "C:\\Users\\maelc\\OneDrive\\Documents\\stage\\New_parser_vensim_julia\\exemples\\Dice.xmile"
  # change this to the filepath to the model to translate
 
 
@@ -656,14 +654,14 @@ function matching(name,ast)
     if t == "STEP"
         lh="("*matching(name,c[1])*")"
         rh="("*matching(name,c[2])*")"
-        return ("ifElde.ifelse( t<"*rh*",0,"*lh*")")
+        return ("IfElse.ifelse( t<"*rh*",0,"*lh*")")
     end
     if t =="SMOOTH"
         lh="("*matching(name,c[1])*")"
         rh="("*matching(name,c[2])*")"
         smn="TEMPVARSMOOTHED_"*name
-        push!(_decl_vars, "\t@variables "*smn*"(t)\n")
-        push!(_decl_eqns,"\t\tD("*smn*") ~ ("*lh *"-"*smn*") /"*rh*"\n")
+        push!(_decl_vars, "@variables "*smn*"(t) [description = \""*smn*", created by the \\\"SMOOTH\\\" function or an afiliate\"]\n")
+        push!(_decl_eqns,"\tD("*smn*") ~ ("*lh *"-"*smn*") /"*rh*"\n")
         return (smn)
 
     end
@@ -674,8 +672,8 @@ function matching(name,ast)
         tm="("*matching(name,c[3])*")"
         smn="TEMPVARSMOOTHED_"*name
         str="("*fm *"-"*smn*") /"*sm
-        push!(_decl_vars,"@variables "*smn*"(t) = "*tm*" [description = "*smn*", created by the \"SMOOTH\" function or an afiliate]\n")
-        push!(_decl_eqns,"\t\tD("*smn*") ~ "* str*"\n")
+        push!(_decl_vars,"@variables "*smn*"(t) = "*tm*" [description = \""*smn*", created by the \\\"SMOOTH\\\" function or an afiliate\"]\n")
+        push!(_decl_eqns,"\tD("*smn*") ~ "* str*"\n")
         return (smn)
         
     end
@@ -687,7 +685,7 @@ function matching(name,ast)
     end
     if t == "TABLE"
         c1="("*matching(name,c[1])*")"
-        return ("_tables[:"*d*"]["*c1*"]")
+        return (d*"("*c1*")")
     end
     if t == "IDENT"
         #println("atteindident")
@@ -704,7 +702,7 @@ function eqn_maker!(name,eqn)
     ast=parser(nl)[1]
     str=matching(name,ast)
     push!(_decl_eqns, "\t"*name*" ~ "*str*"\n")
-    push!(_decl_vars, "@variables "*name*"(t)  [description = "*name*"]\n")
+    push!(_decl_vars, "@variables "*name*"(t)  [description = \""*name*"\"]\n")
 end
 
 function eqn_decls(stocks_ind,eqn_ind,root)
@@ -740,7 +738,7 @@ end
 #now, let's make the tables:
 
 _tables = Dict{Symbol,Tuple{Vararg{Float64}}}()
-_ranges = Dict{Symbol,Tuple{Float64,Float64}}()
+_ranges = Dict{Symbol,Tuple{Vararg{Float64}}}()
 
 function table_maker(eqn_ind,tables_ind,root)
     for i=eqn_ind+1:tables_ind
@@ -755,11 +753,13 @@ function table_maker(eqn_ind,tables_ind,root)
         valt=tuple(vall...)
         _tables[name]=valt
         tabr=root[3][1][i][3][1][1].value
-        m=eachmatch(reg,tabr)
-        vm=collect(m)
-        lr=parse(Float64,vm[1].match)
-        rr=parse(Float64,vm[length(vm)].match)
-        _ranges[name]=(lr,rr)
+        vall2=Vector{Float64}()
+        for s in eachmatch(reg,tabr)
+            v=parse(Float64,s.match)
+            push!(vall2,v)
+        end
+        valt2=tuple(vall2...)
+        _ranges[name]=valt2
     end
 end
 
@@ -874,21 +874,22 @@ end
 function simple_file_writer(_params,_inits,_decl_vars,_decl_eqns,root)
     base_str= 
     "
-    using SpecialFunctions.jl
-    using ModelingToolkit
-    using DifferentialEquations
+using IfElse
+using SpecialFunctions
+using ModelingToolkit
+using DifferentialEquations
 
-    #variables and parameters of the model (the variable/parameter name \"t\" is forbiden)
+#variables and parameters of the model (the variable/parameter name \"t\" is forbiden)
 @variables t
 D = Differential(t)
 "
     for (k,v) in _params 
-        str="@parameters "*string(k)*" = "*string(v)*" [description = "*string(k)*"]\n"
+        str="@parameters "*string(k)*" = "*string(v)*" [description = \""*string(k)*"\"]\n"
         base_str = base_str * str
     end
 
     for (k,v) in _inits 
-        str="@variables "*string(k)*"(t) = "*string(v)*" [description = "*string(k)*"]\n"
+        str="@variables "*string(k)*"(t) = "*string(v)*" [description = \""*string(k)*"\"]\n"
         base_str = base_str * str        
     end
 
@@ -898,8 +899,25 @@ D = Differential(t)
 
     base_str= base_str *" 
     
-    
-    #définition des equations:
+#définition des tables:\n\n"
+    for (k,v) in _tables
+        tbl_str=string(k)*"_base =Vector{Float64}(["
+        for vl in v 
+            tbl_str=tbl_str*string(vl)*","
+        end
+        tbl_str=tbl_str*"])\n"
+        tbl_str=tbl_str*string(k)*"_ranges = Vector{Float64}(["
+        rangev=_ranges[k]
+        for rv in rangev 
+            tbl_str=tbl_str*string(rv)*","
+        end
+        tbl_str=tbl_str*"])\n"*string(k)*"(t)=LinearInterpolation("*string(k)*"_base,"*string(k)*"_ranges)(t)\n@register_symbolic "*string(k)*"(t)\n\n"
+        base_str=base_str*tbl_str
+    end
+
+    base_str= base_str*
+
+"#définition des equations:
 eqs = [
     "
 
@@ -910,7 +928,7 @@ eqs = [
     
 ]
     
-    #il faut maintenant définir le solveur: 
+#il faut maintenant définir le solveur: 
     
 @named sys= ODESystem(eqs)
 sys= structural_simplify(sys)
@@ -918,7 +936,7 @@ prob= ODEProblem(sys,[],("*root[2][1][1].value*","*root[2][2][1].value*"))
 solved=solve(prob)
 using Plots 
 
-plot(solved)
+#plot(solved)
     "
 end
 
