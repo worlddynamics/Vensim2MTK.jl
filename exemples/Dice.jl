@@ -3,10 +3,12 @@ using IfElse
 using SpecialFunctions
 using ModelingToolkit
 using DifferentialEquations
+using DataInterpolations
 
 #variables and parameters of the model (the variable/parameter name "t" is forbiden)
 @variables t
 D = Differential(t)
+@parameters TIME_STEP =10
 @parameters Output_in_1965 = 8.519e12 [description = "Output_in_1965"]
 @parameters Red_Cost_Scale = 0.0686 [description = "Red_Cost_Scale"]
 @parameters A_UO_Heat_Cap = 44.248 [description = "A_UO_Heat_Cap"]
@@ -72,7 +74,8 @@ D = Differential(t)
 @variables CO2_Net_Emiss(t)  [description = "CO2_Net_Emiss"]
 @variables CO2_Rad_Forcing(t)  [description = "CO2_Rad_Forcing"]
 @variables CO2_Storage(t)  [description = "CO2_Storage"]
-@variables TEMPVARSMOOTHED_Cons_Growth_Rate(t) [description = "TEMPVARSMOOTHED_Cons_Growth_Rate, created by the \"SMOOTH\" function or an afiliate"]
+@variables TEMPVAR_Cons_Growth_Rate(t) = 0 # arbitrary value
+@variables TEMPVARSMOOTHED_Cons_Growth_Rate(t) =  TEMPVAR_Cons_Growth_Rate [description = "TEMPVARSMOOTHED_Cons_Growth_Rate, created by the \"SMOOTH\" function or an afiliate"]
 @variables Cons_Growth_Rate(t)  [description = "Cons_Growth_Rate"]
 @variables Consumption(t)  [description = "Consumption"]
 @variables Consumption_per_Cap(t)  [description = "Consumption_per_Cap"]
@@ -84,7 +87,9 @@ D = Differential(t)
 @variables Discounted_Utility(t)  [description = "Discounted_Utility"]
 @variables DO_Heat_Cap(t)  [description = "DO_Heat_Cap"]
 @variables Expected_Return(t)  [description = "Expected_Return"]
-@variables TEMPVARSMOOTHED_Expected_Return_Trend(t) = (Initial_Return_Trend) [description = "TEMPVARSMOOTHED_Expected_Return_Trend, created by the \"SMOOTH\" function or an afiliate"]
+@variables TEMPVAR_Expected_Return_Trend(t) = -0.00054
+ #arbitrary value 
+@variables TEMPVARSMOOTHED_Expected_Return_Trend(t) = (TEMPVAR_Expected_Return_Trend) [description = "TEMPVARSMOOTHED_Expected_Return_Trend, created by the \"SMOOTH\" function or an afiliate"]
 @variables Expected_Return_Trend(t)  [description = "Expected_Return_Trend"]
 @variables Fact_Prod_Gr_Rt_Decline_Rt(t)  [description = "Fact_Prod_Gr_Rt_Decline_Rt"]
 @variables Fact_Prod_Incr_Rt(t)  [description = "Fact_Prod_Incr_Rt"]
@@ -110,7 +115,9 @@ D = Differential(t)
 @variables Reduction_Costs(t)  [description = "Reduction_Costs"]
 @variables Reference_CO2_Emissions(t)  [description = "Reference_CO2_Emissions"]
 @variables Reference_Output(t)  [description = "Reference_Output"]
-@variables TEMPVARSMOOTHED_Smoothed_Return(t) = ((Marg_Return_Capital)-((Initial_Return_Trend)*(smoothing_time))) [description = "TEMPVARSMOOTHED_Smoothed_Return, created by the \"SMOOTH\" function or an afiliate"]
+@variables TEMPVAR_Smoothed_return(t) = 0.0789017
+ #arbitrary value
+@variables TEMPVARSMOOTHED_Smoothed_Return(t) = (TEMPVAR_Smoothed_return) [description = "TEMPVARSMOOTHED_Smoothed_Return, created by the \"SMOOTH\" function or an afiliate"]
 @variables Smoothed_Return(t)  [description = "Smoothed_Return"]
 @variables Temp_Diff(t)  [description = "Temp_Diff"]
 @variables Total_Pop_Utility(t)  [description = "Total_Pop_Utility"]
@@ -124,6 +131,8 @@ Other_GHG_Rad_Forcing_base =Vector{Float64}([0.41,0.5,0.6,0.7,0.78,0.87,0.96,1.0
 Other_GHG_Rad_Forcing_ranges = Vector{Float64}([1965.0,1975.0,1985.0,1995.0,2005.0,2015.0,2025.0,2035.0,2045.0,2055.0,2065.0,2075.0,2085.0,2095.0,2105.0,])
 Other_GHG_Rad_Forcing(t)=LinearInterpolation(Other_GHG_Rad_Forcing_base,Other_GHG_Rad_Forcing_ranges)(t)
 @register_symbolic Other_GHG_Rad_Forcing(t)
+
+
 
 #définition des equations:
 eqs = [
@@ -150,10 +159,8 @@ eqs = [
         CO2_Intens_Capital ~ (CO2_Emiss)/(Capital)
         CO2_Intens_Dec_Rt_Decline_Rt ~ (CO2_Intens_Decline_Rt)*(Fact_Prod_Gr_Rt_Dec_Rt)
         CO2_Net_Emiss ~ (Atmos_Retention)*(CO2_Emiss)
-        CO2_Rad_Forcing ~ (CO2_Rad_Force_Coeff)*(log((2),((CO2_in_Atmos)/(Preindustrial_CO2))))
-        CO2_Storage ~ ((CO2_in_Atmos)-(Preindustrial_CO2))*(Rate_of_CO2_Transfer)
-        D(TEMPVARSMOOTHED_Cons_Growth_Rate) ~ ((Consumption_per_Cap)-TEMPVARSMOOTHED_Cons_Growth_Rate) /(TIME_STEP)
-        Cons_Growth_Rate ~ (log((Consumption_per_Cap)/(TEMPVARSMOOTHED_Cons_Growth_Rate)))/(TIME_STEP)
+        CO2_Rad_Forcing ~ 1#(CO2_Rad_Force_Coeff)*(log((2),((CO2_in_Atmos)/(Preindustrial_CO2))))
+        Cons_Growth_Rate ~ 1#(log((Consumption_per_Cap)/(TEMPVARSMOOTHED_Cons_Growth_Rate)))/(TIME_STEP)
         Consumption ~ (Output)-(Investment)
         Consumption_per_Cap ~ (Consumption)/(Population)
         Decline_CO2_Intens ~ (CO2_Intensity_of_Output)*(CO2_Intens_Decline_Rt)
@@ -164,8 +171,6 @@ eqs = [
         Discounted_Utility ~ (Total_Pop_Utility)*(Discount_Factor)
         DO_Heat_Cap ~ (Heat_Capacity_Ratio)*(Heat_Trans_Coeff)
         Expected_Return ~ (Marg_Return_Capital)+((Expected_Return_Trend)*(Capital_Life))
-        D(TEMPVARSMOOTHED_Expected_Return_Trend) ~ ((((Marg_Return_Capital)-(Smoothed_Return))/(smoothing_time))-TEMPVARSMOOTHED_Expected_Return_Trend) /(smoothing_time)
-        Expected_Return_Trend ~ TEMPVARSMOOTHED_Expected_Return_Trend
         Fact_Prod_Gr_Rt_Decline_Rt ~ (Fact_Prod_Growth_Rt)*(Fact_Prod_Gr_Rt_Dec_Rt)
         Fact_Prod_Incr_Rt ~ (Factor_Productivity)*(Fact_Prod_Growth_Rt)
         Feedback_Cooling ~ (Atmos_UOcean_Temp)*(Climate_Feedback_Param)
@@ -189,15 +194,21 @@ eqs = [
         Rate_of_CO2_Transfer ~ (1)/(CO2_Transfer_Time)
         Reduction_Costs ~ ((1)-(GHG_Red_Cost_Frac))*(Reference_Output)
         Reference_CO2_Emissions ~ (Reference_Output)*(CO2_Intensity_of_Output)
-        Reference_Output ~ (Output_in_1965)*((Factor_Productivity)*((((Capital)/(Initial_Capital))^(Capital_Elast_Output))*(((Population)/(Initial_Population))^((1)-(Capital_Elast_Output)))))
-        D(TEMPVARSMOOTHED_Smoothed_Return) ~ ((Marg_Return_Capital)-TEMPVARSMOOTHED_Smoothed_Return) /(smoothing_time)
-        Smoothed_Return ~ TEMPVARSMOOTHED_Smoothed_Return
+        Reference_Output ~ 1#(Output_in_1965)*((Factor_Productivity)*((((Capital)/(Initial_Capital))^(Capital_Elast_Output))*(((Population)/(Initial_Population))^((1)-(Capital_Elast_Output)))))
         Temp_Diff ~ (Atmos_UOcean_Temp)-(Deep_Ocean_Temp)
         Total_Pop_Utility ~ (Utility)*(Population)
         uncontrolled_emissions ~ (Reference_Output)*(CO2_Intensity_of_Output)
-        Utility ~ (Utility_Coeff)*(IfElse.ifelse((Rate_of_Inequal_Aversion)==(1),(log((Consumption_per_Cap)/(Ref_Cons_per_Cap))),(((((Consumption_per_Cap)/(Ref_Cons_per_Cap))^((1)-(Rate_of_Inequal_Aversion)))-(1))/((1)-(Rate_of_Inequal_Aversion)))))
-
-
+        Utility ~ 1#(Utility_Coeff)*(IfElse.ifelse((Rate_of_Inequal_Aversion)==(1),(log((Consumption_per_Cap)/(Ref_Cons_per_Cap))),(((((Consumption_per_Cap)/(Ref_Cons_per_Cap))^((1)-(Rate_of_Inequal_Aversion)))-(1))/((1)-(Rate_of_Inequal_Aversion)))))
+        D(TEMPVARSMOOTHED_Expected_Return_Trend) ~ ((((Marg_Return_Capital)-(Smoothed_Return))/(smoothing_time))-TEMPVARSMOOTHED_Expected_Return_Trend) /(smoothing_time)
+        Expected_Return_Trend ~ TEMPVARSMOOTHED_Expected_Return_Trend
+        D(TEMPVARSMOOTHED_Smoothed_Return) ~ ((Marg_Return_Capital)-TEMPVARSMOOTHED_Smoothed_Return) /(smoothing_time)
+        Smoothed_Return ~ TEMPVARSMOOTHED_Smoothed_Return
+        CO2_Storage ~ ((CO2_in_Atmos)-(Preindustrial_CO2))*(Rate_of_CO2_Transfer)
+        D(TEMPVARSMOOTHED_Cons_Growth_Rate) ~ ((Consumption_per_Cap)-TEMPVARSMOOTHED_Cons_Growth_Rate) /(TIME_STEP)
+        TEMPVAR_Smoothed_return ~ (Marg_Return_Capital)-((Initial_Return_Trend)*(smoothing_time))
+        TEMPVAR_Expected_Return_Trend ~ Initial_Return_Trend
+        TEMPVAR_Cons_Growth_Rate ~ Consumption_per_Cap
+        
 ]
 
 #il faut maintenant définir le solveur:
