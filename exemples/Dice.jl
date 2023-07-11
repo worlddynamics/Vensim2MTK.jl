@@ -217,5 +217,5 @@ sys= structural_simplify(sys)
 prob= ODEProblem(sys,[],(1965,2305))
 solved=solve(prob)
 using Plots
-
-#plot(solved)
+##
+plot(solved, idxs = (Population))

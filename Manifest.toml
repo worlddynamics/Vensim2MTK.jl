@@ -2,7 +2,7 @@
 
 julia_version = "1.9.2"
 manifest_format = "2.0"
-project_hash = "bc98147ee7dd6c10fe4532d2ec95f4dc9587fa24"
+project_hash = "57a96723e09e48fe61f7da973947a9adb61fabbc"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "e58c18d2312749847a74f5be80bb0fa53da102bd"
@@ -206,6 +206,24 @@ version = "4.1.1"
 git-tree-sha1 = "8da84edb865b0b5b0100c0666a9bc9a0b71c553c"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 version = "1.15.0"
+
+[[deps.DataInterpolations]]
+deps = ["LinearAlgebra", "RecipesBase", "RecursiveArrayTools", "Reexport", "Requires"]
+git-tree-sha1 = "e52a7c2388471ca6e7e6dcd68c98073f378b8967"
+uuid = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
+version = "4.0.1"
+
+    [deps.DataInterpolations.extensions]
+    DataInterpolationsChainRulesCoreExt = "ChainRulesCore"
+    DataInterpolationsOptimExt = "Optim"
+    DataInterpolationsRegularizationToolsExt = "RegularizationTools"
+    DataInterpolationsSymbolicsExt = "Symbolics"
+
+    [deps.DataInterpolations.weakdeps]
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    Optim = "429524aa-4258-5aef-a3af-852621145aeb"
+    RegularizationTools = "29dad682-9a27-4bc3-9c72-016788665182"
+    Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [[deps.DataStructures]]
 deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
