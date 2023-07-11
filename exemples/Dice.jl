@@ -49,16 +49,16 @@ D = Differential(t)
 @parameters Initial_Capital = 1.6e13 [description = "Initial_Capital"]
 @parameters Climate_Damage_Scale = 0.013 [description = "Climate_Damage_Scale"]
 @parameters Heat_Capacity_Ratio = 0.44 [description = "Heat_Capacity_Ratio"]
-@variables Deep_Ocean_Temp(t) = -1.0 [description = "Deep_Ocean_Temp"]
-@variables Pop_Growth_Rate(t) = -1.0 [description = "Pop_Growth_Rate"]
-@variables CO2_Intens_Decline_Rt(t) = -1.0 [description = "CO2_Intens_Decline_Rt"]
-@variables CO2_Intensity_of_Output(t) = -1.0 [description = "CO2_Intensity_of_Output"]
-@variables Capital(t) = -1.0 [description = "Capital"]
-@variables Atmos_UOcean_Temp(t) = -1.0 [description = "Atmos_UOcean_Temp"]
-@variables CO2_in_Atmos(t) = -1.0 [description = "CO2_in_Atmos"]
-@variables Cum_Disc_Utility(t) = 0.0 [description = "Cum_Disc_Utility"]
-@variables Population(t) = -1.0 [description = "Population"]
-@variables Fact_Prod_Growth_Rt(t) = -1.0 [description = "Fact_Prod_Growth_Rt"]
+@variables Deep_Ocean_Temp(t) = 0.1 [description = "Deep_Ocean_Temp"]
+@variables Pop_Growth_Rate(t) = 0.0223 [description = "Pop_Growth_Rate"]       
+@variables CO2_Intens_Decline_Rt(t) = 0.01168 [description = "CO2_Intens_Decline_Rt"]
+@variables CO2_Intensity_of_Output(t) = 0.000519 [description = "CO2_Intensity_of_Output"]
+@variables Capital(t) = 1.6e13 [description = "Capital"]
+@variables Atmos_UOcean_Temp(t) = 0.2 [description = "Atmos_UOcean_Temp"]      
+@variables CO2_in_Atmos(t) = 6.77e11 [description = "CO2_in_Atmos"]
+@variables Cum_Disc_Utility(t) = 0.0 [description = "Cum_Disc_Utility"]        
+@variables Population(t) = 3.369e9 [description = "Population"]
+@variables Fact_Prod_Growth_Rt(t) = 0.015 [description = "Fact_Prod_Growth_Rt"]
 @variables Factor_Productivity(t) = 1.0 [description = "Factor_Productivity"]
 @variables Capital_Labor_Ratio(t)  [description = "Capital_Labor_Ratio"]
 @variables Capital_Life(t)  [description = "Capital_Life"]
@@ -126,7 +126,6 @@ D = Differential(t)
 
 
 #définition des tables:
-
 Other_GHG_Rad_Forcing_base =Vector{Float64}([0.41,0.5,0.6,0.7,0.78,0.87,0.96,1.05,1.14,1.2,1.25,1.29,1.32,1.35,1.36,])
 Other_GHG_Rad_Forcing_ranges = Vector{Float64}([1965.0,1975.0,1985.0,1995.0,2005.0,2015.0,2025.0,2035.0,2045.0,2055.0,2065.0,2075.0,2085.0,2095.0,2105.0,])
 Other_GHG_Rad_Forcing(t)=LinearInterpolation(Other_GHG_Rad_Forcing_base,Other_GHG_Rad_Forcing_ranges)(t)
@@ -159,8 +158,8 @@ eqs = [
         CO2_Intens_Capital ~ (CO2_Emiss)/(Capital)
         CO2_Intens_Dec_Rt_Decline_Rt ~ (CO2_Intens_Decline_Rt)*(Fact_Prod_Gr_Rt_Dec_Rt)
         CO2_Net_Emiss ~ (Atmos_Retention)*(CO2_Emiss)
-        CO2_Rad_Forcing ~ 1#(CO2_Rad_Force_Coeff)*(log((2),((CO2_in_Atmos)/(Preindustrial_CO2))))
-        Cons_Growth_Rate ~ 1#(log((Consumption_per_Cap)/(TEMPVARSMOOTHED_Cons_Growth_Rate)))/(TIME_STEP)
+        CO2_Rad_Forcing ~ (CO2_Rad_Force_Coeff)*(log((2),((CO2_in_Atmos)/(Preindustrial_CO2))))
+        Cons_Growth_Rate ~ (log((Consumption_per_Cap)/(TEMPVARSMOOTHED_Cons_Growth_Rate)))/(TIME_STEP)
         Consumption ~ (Output)-(Investment)
         Consumption_per_Cap ~ (Consumption)/(Population)
         Decline_CO2_Intens ~ (CO2_Intensity_of_Output)*(CO2_Intens_Decline_Rt)
@@ -194,11 +193,11 @@ eqs = [
         Rate_of_CO2_Transfer ~ (1)/(CO2_Transfer_Time)
         Reduction_Costs ~ ((1)-(GHG_Red_Cost_Frac))*(Reference_Output)
         Reference_CO2_Emissions ~ (Reference_Output)*(CO2_Intensity_of_Output)
-        Reference_Output ~ 1#(Output_in_1965)*((Factor_Productivity)*((((Capital)/(Initial_Capital))^(Capital_Elast_Output))*(((Population)/(Initial_Population))^((1)-(Capital_Elast_Output)))))
+        Reference_Output ~ (Output_in_1965)*((Factor_Productivity)*((((Capital)/(Initial_Capital))^(Capital_Elast_Output))*(((Population)/(Initial_Population))^((1)-(Capital_Elast_Output)))))
         Temp_Diff ~ (Atmos_UOcean_Temp)-(Deep_Ocean_Temp)
         Total_Pop_Utility ~ (Utility)*(Population)
         uncontrolled_emissions ~ (Reference_Output)*(CO2_Intensity_of_Output)
-        Utility ~ 1#(Utility_Coeff)*(IfElse.ifelse((Rate_of_Inequal_Aversion)==(1),(log((Consumption_per_Cap)/(Ref_Cons_per_Cap))),(((((Consumption_per_Cap)/(Ref_Cons_per_Cap))^((1)-(Rate_of_Inequal_Aversion)))-(1))/((1)-(Rate_of_Inequal_Aversion)))))
+        Utility ~ (Utility_Coeff)*(IfElse.ifelse((Rate_of_Inequal_Aversion)==(1),(log((Consumption_per_Cap)/(Ref_Cons_per_Cap))),(((((Consumption_per_Cap)/(Ref_Cons_per_Cap))^((1)-(Rate_of_Inequal_Aversion)))-(1))/((1)-(Rate_of_Inequal_Aversion)))))
         D(TEMPVARSMOOTHED_Expected_Return_Trend) ~ ((((Marg_Return_Capital)-(Smoothed_Return))/(smoothing_time))-TEMPVARSMOOTHED_Expected_Return_Trend) /(smoothing_time)
         Expected_Return_Trend ~ TEMPVARSMOOTHED_Expected_Return_Trend
         D(TEMPVARSMOOTHED_Smoothed_Return) ~ ((Marg_Return_Capital)-TEMPVARSMOOTHED_Smoothed_Return) /(smoothing_time)
