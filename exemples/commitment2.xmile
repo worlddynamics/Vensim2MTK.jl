@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xmile version="1.0" xmlns="http://docs.oasis-open.org/xmile/ns/XMILE/v1.0">
+	<header>
+		<product version="1.0" lang="en">Vensim</product>
+		<vendor>Ventana Systems, Inc.</vendor>
+		<created>
+		</created>
+		<modified>
+		</modified>
+		<name>
+		</name>
+		<caption>
+		</caption>
+	</header>
+	<sim_specs method="RK4" time_units="T">
+		<start> 0</start>
+		<stop> 100</stop>
+		<dt> TIME_STEP=1</dt>
+	</sim_specs>
+	<model>
+		<variables>
+			<stock name="nA_fraction_holding_A_view">
+				<units>fraction</units>
+				<doc></doc>
+					<eqn>
+					0
+					</eqn>
+					<inflow>
+					Conversion to A
+					</inflow>
+					<outflow>
+					Moderation of A
+					</outflow>
+			</stock>
+			<stock name="nAB_fraction_moderate">
+				<units>fraction</units>
+				<doc></doc>
+					<eqn>
+					0
+					</eqn>
+					<inflow>
+					Moderation of A
+					</inflow>
+					<inflow>
+					Moderation of B
+					</inflow>
+					<outflow>
+					Conversion to A
+					</outflow>
+					<outflow>
+					Conversion to B
+					</outflow>
+			</stock>
+			<stock name="nB_fraction_holding_B_view">
+				<units>fraction</units>
+				<doc></doc>
+					<eqn>
+					1-p_fraction_of_Ac_zealots
+					</eqn>
+					<inflow>
+					Conversion to B
+					</inflow>
+					<outflow>
+					Moderation of B
+					</outflow>
+			</stock>
+			<aux name="Conversion_to_A">
+				<units>fraction/T</units>
+				<doc></doc>
+					<eqn>
+	(p_fraction_of_Ac_zealots+nA_fraction_holding_A_view)*nAB_fraction_moderate*(1-s_Stubbornness)*r_Conversion					</eqn>
+			</aux>
+			<aux name="Conversion_to_B">
+				<units>fraction/T</units>
+				<doc></doc>
+					<eqn>
+	nB_fraction_holding_B_view*nAB_fraction_moderate*(1-s_Stubbornness)*r_Conversion					</eqn>
+			</aux>
+			<aux name="Moderation_of_A">
+				<units>fraction/T</units>
+				<doc></doc>
+					<eqn>
+	nA_fraction_holding_A_view*nB_fraction_holding_B_view*r_Moderation
+	+r_Moderate_evangelism*nA_fraction_holding_A_view*nAB_fraction_moderate
+	+u_Nonsocial_deradicalization*nA_fraction_holding_A_view					</eqn>
+			</aux>
+			<aux name="Moderation_of_B">
+				<units>fraction/T</units>
+				<doc></doc>
+					<eqn>
+	(p_fraction_of_Ac_zealots+nA_fraction_holding_A_view)*nB_fraction_holding_B_view*r_Moderation
+	+r_Moderate_evangelism*nB_fraction_holding_B_view*nAB_fraction_moderate
+	+u_Nonsocial_deradicalization*nB_fraction_holding_B_view					</eqn>
+			</aux>
+						<aux name="PARAMETERS_SEPARATOR">
+				<units>watt/(meter*meter)</units>
+				<doc>Managing the Global Commons, Table 4.9B, pg. 73.</doc>
+<gf>
+<xpts>0.0,0.0</xpts>
+<ypts>0.0,0.0</ypts>
+</gf>
+</aux>
+
+
+
+			<aux name="p_fraction_of_Ac_zealots">
+				<units>fraction</units>
+				<doc></doc>
+					<eqn>
+	0.137					</eqn>
+			</aux>
+			<aux name="r_Conversion">
+				<units>1/T</units>
+				<doc>Implicit rate constant for conversion</doc>
+					<eqn>
+	1					</eqn>
+			</aux>
+			<aux name="r_Moderate_evangelism">
+				<units>1/T</units>
+				<doc></doc>
+					<eqn>
+	0					</eqn>
+			</aux>
+			<aux name="r_Moderation">
+				<units>1/T</units>
+				<doc>Implicit rate constant for moderation</doc>
+					<eqn>
+	1					</eqn>
+			</aux>
+			<aux name="s_Stubbornness">
+				<units>dmnl</units>
+				<doc></doc>
+					<eqn>
+	0					</eqn>
+			</aux>
+			<aux name="u_Nonsocial_deradicalization">
+				<units>1/T</units>
+				<doc></doc>
+					<eqn>
+	0					</eqn>
+			</aux>
+		</variables>
+	</model>
+</xmile>
