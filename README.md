@@ -21,7 +21,7 @@ list of Vensim functions currently implemented:
 
 "EXP"
 "LOG"
-"GAME"(will not cause an error but not implemented, as there is no interactive mode yet
+"GAME"(will not cause an error but not implemented, as there is no interactive mode yet)
 "IFTHENELSE"
 "SMOOTH"
 "SMOOTHi"
