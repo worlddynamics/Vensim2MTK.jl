@@ -39,4 +39,5 @@ list of Vensim functions currently implemented:
 "GAMMA_LN"
 "MODULO"
 "SMOOTH3"
-"PULSE
+"PULSE"
+"RAMP"
