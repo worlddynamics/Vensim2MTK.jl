@@ -41,3 +41,6 @@ list of Vensim functions currently implemented:
 "SMOOTH3"
 "PULSE"
 "RAMP"
+"SMOOTH3i"
+"DELAY1"
+"DELAY1I"
