@@ -18,7 +18,7 @@ Vensim.Vensim2MTK("path/to/a/vensim/model/model.xmile","MTKmodel.jl",false)
 This code will write in the file "MTKmodel.jl" an implementation in ModelingToolkit of the model exported in "model.xmile" from the Vensim app.
 
 
-##List of Vensim functions currently implemented:
+## List of Vensim functions currently implemented:
 
 -"EXP"
 -"LOG"
