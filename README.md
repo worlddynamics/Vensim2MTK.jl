@@ -10,38 +10,39 @@ Vensim2MTK has 3 arguments:
 
 
 Example of use:
-'''julia
+```julia
 using Vensim
 
 Vensim.Vensim2MTK("path/to/a/vensim/model/model.xmile","MTKmodel.jl",false) 
-'''
+```
 This code will write in the file "MTKmodel.jl" an implementation in ModelingToolkit of the model exported in "model.xmile" from the Vensim app.
 
 
 ## List of Vensim functions currently implemented:
 
--"EXP"
--"LOG"
--"GAME"(will not cause an error but not implemented, as there is no interactive mode yet)
--"IFTHENELSE"
--"SMOOTH"
--"SMOOTHi"
--"STEP"
--"MAX"
--"MIN"
--"LN"
--"ABS"
--"COS"
--"ARCCOS"
--"SIN"
--"ARCSIN"
--"TAN"
--"ARCTAN"
--"GAMMA_LN"
--"MODULO"
--"SMOOTH3"
--"PULSE"
--"RAMP"
--"SMOOTH3i"
--"DELAY1"
--"DELAY1I"
+- "if_then_else"
+- "EXP" 
+- "LOG"
+- "GAME"(will not cause an error but not implemented, as there is no interactive mode yet)
+- "IFTHENELSE"
+- "SMOOTH"
+- "SMOOTHi"
+- "STEP"
+- "MAX"
+- "MIN"
+- "LN"
+- "ABS"
+- "COS"
+- "ARCCOS"
+- "SIN"
+- "ARCSIN"
+- "TAN"
+- "ARCTAN"
+- "GAMMA_LN"
+- "MODULO"
+- "SMOOTH3"
+- "PULSE"
+- "RAMP"
+- "SMOOTH3i"
+- "DELAY1"
+- "DELAY1I"
