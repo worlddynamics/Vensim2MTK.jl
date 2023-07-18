@@ -4,9 +4,9 @@ This package provides a function "Vensim2MTK" that can produce a Julia file of a
 
 Usage of the function: 
 Vensim2MTK has 3 arguments:
--Filepath: the path to the vensim file that one wants to translate. Default to ./examples/Dice.xmile
--Filename: the name of the output file. default to the name of the input file with the extension ".jl" replacing ".xmile"
--Overwrite: boolean argument that decide if filename already exist, if it aborts or overwrite (true to overwrite)
+- Filepath: the path to the vensim file that one wants to translate. Default to ./examples/Dice.xmile
+- Filename: the name of the output file. default to the name of the input file with the extension ".jl" replacing ".xmile"
+- Overwrite: boolean argument that decide if filename already exist, if it aborts or overwrite (true to overwrite)
 
 
 Example of use:
