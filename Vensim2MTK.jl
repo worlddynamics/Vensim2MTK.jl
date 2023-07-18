@@ -1,4 +1,5 @@
 
+
 using XML
 
 function setup(filepath)
@@ -50,22 +51,23 @@ function add_parameters!(node,tables_ind,len,_params)
     end
 end
 
-function get_init_value(node,_params)
-    try
-        (name,value)= get_values(node)
-        return (name,value)
-    catch 
-        name=Symbol(get(attributes(node),"name",-1))
-        value_name=Symbol(node[3][1].value)
-        value=get(_params,value_name,-1)
-        return(name,value)
-    end
+
+function get_init_value(node,_decl_eqns,_decl_vars,_tables,_params)
+    name=Symbol(get(attributes(node),"name",-1))
+    eqn=(node[3][1].value)
+    tsl=parsing_prep(eqn,_tables)
+    tsl=param_passing(tsl,_params)
+    nl=node_convert(tsl)
+    ast=parser(nl)[1]
+    str=matching(name,ast,_decl_eqns,_decl_vars,_tables)
+    return(name,str)
 end
 
-function add_inits!(node,stocks_ind,_inits,_params)
+
+function add_inits!(node,stocks_ind,_inits,_decl_eqns,_decl_vars,_tables,_params)
     cdrns=children(node)
     for i=1:stocks_ind
-        (name,value)= get_init_value(node[i],_params)
+        (name,value)= get_init_value(node[i],_decl_eqns,_decl_vars,_tables,_params)
         _inits[name] = value 
     end
 end
@@ -73,7 +75,7 @@ end
 const _word_separators=("/","-","+","*","^","(",")",",","<",">","=","!","[","]","{","}"," ","\r","\n","\t")
 const _tokenized_ws=("DIV","MINUS","PLUS","TIME","POW","LP","RP","COMMA","LT","GT","EQUAL","NOT","LB","RB","LCB","RCB")
 const _keywords=("EXP","LOG","GAME","if_then_else","SMOOTHi","STEP","MAX","MIN","LN","SMOOTH","ABS","COS","ARCCOS","SIN","ARCSIN","TAN","ARCTAN",
-"GAMMA_LN", "MODULO","RAMP",":AND:",":OR:"
+"GAMMA_LN", "MODULO","RAMP",":AND:",":OR:","SMOOTH3","PULSE","SMOOTH3i","DELAY1","DELAY1I","SQRT"
 )
 
 function is_in(x,l)
@@ -156,20 +158,31 @@ function parsing_prep(s,_tables)
     return tsl
 end
 
-
+function param_passing(tsl,_params)
+    for i=1:(length(tsl)) 
+        (t,d)=tsl[i]
+        value_name=Symbol(d)
+        value=get(_params,value_name,"no_value")
+        if t =="IDENT" && value != "no_value"
+            d=string(value)
+            tsl[i]=(t,d)
+        end
+    end
+    return(tsl)
+end
 const _keywords2=("EXP","LOG","GAME","IFTHENELSE","SMOOTH","SMOOTHi","STEP","MAX","MIN","LN","ABS","TABLE","COS","ARCCOS","SIN","ARCSIN","TAN","ARCTAN",
-"GAMMA_LN", "MODULO","RAMP",":AND:",":OR:"
+"GAMMA_LN", "MODULO","RAMP",":AND:",":OR:","SMOOTH3","PULSE","SMOOTH3i","DELAY1","DELAY1I","SQRT"
 
 
 ) #keywords, but if_then_else is called IFTHENELSE to match other tokens. this may happen to othe functions added later on.
 const _one_arg_fcts=("EXP","LN","GAME","TABLE","COS","ARCCOS","SIN","ARCSIN","TAN","ARCTAN",
-"GAMMA_LN")
-const _two_arg_fcts=("MAX","LOG","MIN","STEP","SMOOTH","MODULO")
-const _three_arg_fcts=("IFTHENELSE","SMOOTHi")
+"GAMMA_LN","SQRT")
+const _two_arg_fcts=("MAX","LOG","MIN","STEP","SMOOTH","MODULO","SMOOTH3","PULSE","DELAY1")
+const _three_arg_fcts=("IFTHENELSE","SMOOTHi","RAMP","DELAY1I")
 #depending on the number of arguments, function will be parsed differently. 
 
 
-struct AstNode
+mutable struct AstNode
     token::String
     data::String
     children::Vector{AstNode}
@@ -308,7 +321,20 @@ function sub_detect_fifthpass(ns)
     for i=1:len 
         n=ns[i]
         token,data=n.token,n.data 
-        if ( token=="EQUAL" || token=="LT" || token == "GT" || token == ":AND:"|| token == ":OR:") && n.children == AstNode[]
+        if (  token == ":AND:"|| token == ":OR:") && n.children == AstNode[]
+            return (i)
+        end
+    end
+    return (-1)
+end
+
+function sub_detect_fifthpass_bis(ns)
+    #detect logic 
+    len=length(ns)
+    for i=1:len 
+        n=ns[i]
+        token,data=n.token,n.data 
+        if ( token=="EQUAL" || token=="LT" || token == "GT" ) && n.children == AstNode[]
             return (i)
         end
     end
@@ -410,6 +436,11 @@ function parser(nl)
     if sign_pos>0
         return fifth_seventh_eighth_pass(sign_pos,nl)
     end
+
+    sign_pos=sub_detect_fifthpass_bis(nl)
+    if sign_pos>0
+        return fifth_seventh_eighth_pass(sign_pos,nl)
+    end
     #sixth pass
     sign_pos=sub_detect_sixthpass(nl)
     if sign_pos>0
@@ -442,6 +473,29 @@ function parser(nl)
 
     return nl
 end
+
+function ifelse_seperate!(ast)
+    t,d,c=ast.token,ast.data,ast.children
+    if t=="IFTHENELSE"
+        cond=c[1]
+        tc,dc,cc=cond.token,cond.data,cond.children
+        if tc == ":AND:"
+            newchildren=[cc[2],c[2],c[3]]
+            newnode=_make_node("IFTHENELSE","",newchildren)
+            c[1]=cc[1]
+            c[2]=newnode
+        end
+        if tc == ":OR:"
+            newchildren=[cc[2],c[2],c[3]]
+            newnode=_make_node("IFTHENELSE","",newchildren)
+            c[1]=cc[1]
+            c[3]=newnode
+        end
+    end
+    for as in c
+        ifelse_seperate!(as)
+    end
+end
 #now that we have an AST of the eqn, we need to translate it into another string, but this time respecting julia syntax: 
 
 function matching(name,ast,_decl_eqns,_decl_vars,_tables)
@@ -455,40 +509,74 @@ function matching(name,ast,_decl_eqns,_decl_vars,_tables)
     t == "POW" && return "(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ") ^ (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
     t == "LT" && return "(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ") < (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
     t == "GT" && return "(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ") > (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
-    t == "EQUAL" && return "(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ") = (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
+    t == "EQUAL" && return "(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ") == (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
     t == ":AND:" && return "(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ") && (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
     t == ":OR:" && return "(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ") || (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
-    t == "LN" && return " log (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
-    t == "EXP" && return " exp (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
-    t == "GAME" && return " (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
-    t == "ABS" && return " abs (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
-    t == "COS" && return " cos (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
-    t == "ARCCOS" && return " arccos (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
-    t == "SIN" && return " sin (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
-    t == "ARCSIN" && return " arcsin (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
-    t == "TAN" && return " tan (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
-    t == "ARCTAN" && return " arctan (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
-    t == "COSH" && return " cosh (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
-    t == "GAMMA_LN" && return " loggamma (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
-    t == "MAX" && return "max ((" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ") , (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * "))"
-    t == "log" && return "min ((" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ") , (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * "))"
-    t == "LOG" && return "max ((" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ") , (" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * "))"
+    t == "LN" && return " log(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ")"
+    t == "EXP" && return " exp(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ")"
+    t == "SQRT" && return " sqrt(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ")"
+    t == "GAME" && return " (" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ")"
+    t == "ABS" && return " abs(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ")"
+    t == "COS" && return " cos(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ")"
+    t == "ARCCOS" && return " arccos(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ")"
+    t == "SIN" && return " sin(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ")"
+    t == "ARCSIN" && return " arcsin(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ")"
+    t == "TAN" && return " tan(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ")"
+    t == "ARCTAN" && return " arctan(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ")"
+    t == "COSH" && return " cosh(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ")"
+    t == "GAMMA_LN" && return " loggamma(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ")"
+    t == "MAX" && return "max((" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ") , (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * "))"
+    t == "MIN" && return "min((" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ") , (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * "))"
+    t == "LOG" && return "max((" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ") , (" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * "))"
     t == "MODULO" && return "(" * matching(name,c[1],_decl_eqns,_decl_vars,_tables) * ") % (" * matching(name,c[2],_decl_eqns,_decl_vars,_tables) * ")"
     t == "STEP"&& return ("IfElse.ifelse( t<"*"("*matching(name,c[2],_decl_eqns,_decl_vars,_tables)*")"*",0,"*"("*matching(name,c[1],_decl_eqns,_decl_vars,_tables)*")"*")")
     t == "TABLE" && return (d*"("*"("*matching(name,c[1],_decl_eqns,_decl_vars,_tables)*")"*")")
     t == "IDENT" && return d
     t =="IFTHENELSE" && return ("IfElse.ifelse("*matching(name,c[1],_decl_eqns,_decl_vars,_tables)*","*"("*matching(name,c[2],_decl_eqns,_decl_vars,_tables)*")"*","*"("*matching(name,c[3],_decl_eqns,_decl_vars,_tables)*")"*")")
+    t =="PULSE" && return ("IfElse.ifelse("*"t_plus > "*matching(name,c[1],_decl_eqns,_decl_vars,_tables)*", IfElse.ifelse(t_plus < ("*matching(name,c[1],_decl_eqns,_decl_vars,_tables)*" + "*matching(name,c[2],_decl_eqns,_decl_vars,_tables)*"), 1.0, 0.0),0.0)")
+    t ==":AND:" 
+    if t == "RAMP"
+        fm="("*matching(name,c[1],_decl_eqns,_decl_vars,_tables)*")"
+        sm="("*matching(name,c[2],_decl_eqns,_decl_vars,_tables)*")"
+        tm="("*matching(name,c[3],_decl_eqns,_decl_vars,_tables)*")"
+        return ("IfElse.ifelse( t > "*sm*",IfElse.ifelse( t < "*tm*", "*fm*"* (t -"*sm*"), "*fm*"* ("*tm*" - "*sm*")),0"
+    )
+    end
     if t =="SMOOTH"
         lh="("*matching(name,c[1],_decl_eqns,_decl_vars,_tables)*")"
         rh="("*matching(name,c[2],_decl_eqns,_decl_vars,_tables)*")"
         smn="TEMPVARSMOOTHED_"*name
         smn2="TEMPVAR_"*name
-        push!(_decl_vars,"@variables "*smn*"(t) = "*smn2*" [description = \""*smn*", created by the \\\"SMOOTH\\\" function or an afiliate.\"]\n")
         push!(_decl_vars,"@variables "*smn2*"(t) = 42 [description = \""*smn2*", created by the \\\"SMOOTH\\\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution\"]\n")
+        push!(_decl_vars,"@variables "*smn*"(t) = "*smn2*" [description = \""*smn*", created by the \\\"SMOOTH\\\" function or an afiliate.\"]\n")
         push!(_decl_eqns,"\t"*smn2*" ~ "*lh*"\n")
         push!(_decl_eqns,"\tD("*smn*") ~ ("*lh *"-"*smn*") /"*rh*"\n")
         return (smn)
     end
+    if t == "DELAY1"
+        lh="("*matching(name,c[1],_decl_eqns,_decl_vars,_tables)*")"
+        rh="("*matching(name,c[2],_decl_eqns,_decl_vars,_tables)*")"
+        dln="TEMPVARDELAYED_"*name
+        dln2="TEMPVAR_"*name
+        push!(_decl_vars,"@variables "*dln2*"(t) = 42 [description = \""*smn2*", created by the \\\"SMOOTH\\\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution\"]\n")
+        push!(_decl_vars,"@variables "*dln*"(t) = "*dln2*" [description = \""*smn*", created by the \\\"SMOOTH\\\" function or an afiliate.\"]\n")
+        push!(_decl_eqns,"\t"*dln2*" ~ "*lh*"*"*rh*"\n")
+        push!(_decl_eqns,"\tD("*dln*") ~ ("*lh *"-"*dln*") \n")
+        return (dln*"/"*rh)
+    end
+    if t == "DELAY1I"
+        lh="("*matching(name,c[1],_decl_eqns,_decl_vars,_tables)*")"
+        rh="("*matching(name,c[2],_decl_eqns,_decl_vars,_tables)*")"
+        tm="("*matching(name,c[3],_decl_eqns,_decl_vars,_tables)*")"
+        dln="TEMPVARDELAYED_"*name
+        dln2="TEMPVAR_"*name
+        push!(_decl_vars,"@variables "*dln2*"(t) = 42 [description = \""*smn2*", created by the \\\"SMOOTH\\\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution\"]\n")
+        push!(_decl_vars,"@variables "*dln*"(t) = "*dln2*" [description = \""*smn*", created by the \\\"SMOOTH\\\" function or an afiliate.\"]\n")
+        push!(_decl_eqns,"\t"*dln2*" ~ "*tm*"*"*rh*"\n")
+        push!(_decl_eqns,"\tD("*dln*") ~ ("*lh *"-"*dln*") \n")
+        return (smn*"/"*rh)
+    end    
+
     if t == "SMOOTHi"
         fm="("*matching(name,c[1],_decl_eqns,_decl_vars,_tables)*")"
         sm="("*matching(name,c[2],_decl_eqns,_decl_vars,_tables)*")"
@@ -496,14 +584,67 @@ function matching(name,ast,_decl_eqns,_decl_vars,_tables)
         smn="TEMPVARSMOOTHED_"*name
         smn2="TEMPVAR_"*name
         str="("*fm *"-"*smn*") /"*sm
-        push!(_decl_vars,"@variables "*smn*"(t) = "*smn2*" [description = \""*smn*", created by the \\\"SMOOTH\\\" function or an afiliate\"]\n")
         push!(_decl_vars,"@variables "*smn2*"(t) = 42 [description = \""*smn2*", created by the \\\"SMOOTH\\\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution\"]\n")
+        push!(_decl_vars,"@variables "*smn*"(t) = "*smn2*" [description = \""*smn*", created by the \\\"SMOOTH\\\" function or an afiliate\"]\n")
         push!(_decl_eqns,"\t"*smn2*" ~ "*tm*"\n")
         push!(_decl_eqns,"\tD("*smn*") ~ "* str*"\n")
         return (smn)       
     end
-    
-    
+    if t =="SMOOTH3"
+        lh="("*matching(name,c[1],_decl_eqns,_decl_vars,_tables)*")"
+        rh="("*matching(name,c[2],_decl_eqns,_decl_vars,_tables)*")"
+        dl="("*rh*"/3)"
+        fsmn="TEMPVARSMOOTHED1_"*name
+        ssmn="TEMPVARSMOOTHED2_"*name
+        tsmn="TEMPVARSMOOTHED3_"*name
+        fsmn2="TEMPVAR1_"*name
+        ssmn2="TEMPVAR2_"*name
+        tsmn2="TEMPVAR3_"*name
+        lv1="("*lh*"-"*fsmn*") /"*dl
+        lv2="("*fsmn*"-"*ssmn*") /"*dl
+        str="("*ssmn*"-"*tsmn*") /"*dl
+        push!(_decl_vars,"@variables "*fsmn2*"(t) = 42 [description = \""*fsmn2*", created by the \\\"SMOOTH\\\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution\"]\n")
+        push!(_decl_vars,"@variables "*ssmn2*"(t) = 42 [description = \""*ssmn2*", created by the \\\"SMOOTH\\\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution\"]\n")
+        push!(_decl_vars,"@variables "*tsmn2*"(t) = 42 [description = \""*tsmn2*", created by the \\\"SMOOTH\\\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution\"]\n")
+        push!(_decl_vars,"@variables "*fsmn*"(t) = "*fsmn2*" [description = \""*fsmn*", created by the \\\"SMOOTH\\\" function or an afiliate\"]\n")
+        push!(_decl_vars,"@variables "*ssmn*"(t) = "*ssmn2*" [description = \""*ssmn*", created by the \\\"SMOOTH\\\" function or an afiliate\"]\n")
+        push!(_decl_vars,"@variables "*tsmn*"(t) = "*tsmn2*" [description = \""*tsmn*", created by the \\\"SMOOTH\\\" function or an afiliate\"]\n")
+        push!(_decl_eqns,"\t"*fsmn2*" ~ "*lh*"\n")
+        push!(_decl_eqns,"\t"*ssmn2*" ~ "*lh*"\n")
+        push!(_decl_eqns,"\t"*tsmn2*" ~ "*lh*"\n")
+        push!(_decl_eqns,"\tD("*fsmn*") ~ "*lv1*"\n")
+        push!(_decl_eqns,"\tD("*ssmn*") ~ "*lv2*"\n")
+        push!(_decl_eqns,"\tD("*tsmn*") ~ "*str*"\n")
+        return (tsmn)
+    end    
+    if t =="SMOOTH3i"
+        lh="("*matching(name,c[1],_decl_eqns,_decl_vars,_tables)*")"
+        rh="("*matching(name,c[2],_decl_eqns,_decl_vars,_tables)*")"
+        tm="("*matching(name,c[3],_decl_eqns,_decl_vars,_tables)*")"
+        dl="("*rh*"/3)"
+        fsmn="TEMPVARSMOOTHED1_"*name
+        ssmn="TEMPVARSMOOTHED2_"*name
+        tsmn="TEMPVARSMOOTHED3_"*name
+        fsmn2="TEMPVAR1_"*name
+        ssmn2="TEMPVAR2_"*name
+        tsmn2="TEMPVAR3_"*name
+        lv1="("*lh*"-"*fsmn*") /"*dl
+        lv2="("*fsmn*"-"*ssmn*") /"*dl
+        str="("*ssmn*"-"*tsmn*") /"*dl
+        push!(_decl_vars,"@variables "*fsmn2*"(t) = 42 [description = \""*fsmn2*", created by the \\\"SMOOTH\\\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution\"]\n")
+        push!(_decl_vars,"@variables "*ssmn2*"(t) = 42 [description = \""*ssmn2*", created by the \\\"SMOOTH\\\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution\"]\n")
+        push!(_decl_vars,"@variables "*tsmn2*"(t) = 42 [description = \""*tsmn2*", created by the \\\"SMOOTH\\\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution\"]\n")
+        push!(_decl_vars,"@variables "*fsmn*"(t) = "*fsmn2*" [description = \""*fsmn*", created by the \\\"SMOOTH\\\" function or an afiliate\"]\n")
+        push!(_decl_vars,"@variables "*ssmn*"(t) = "*ssmn2*" [description = \""*ssmn*", created by the \\\"SMOOTH\\\" function or an afiliate\"]\n")
+        push!(_decl_vars,"@variables "*tsmn*"(t) = "*tsmn2*" [description = \""*tsmn*", created by the \\\"SMOOTH\\\" function or an afiliate\"]\n")
+        push!(_decl_eqns,"\t"*fsmn2*" ~ "*tm*"\n")
+        push!(_decl_eqns,"\t"*ssmn2*" ~ "*tm*"\n")
+        push!(_decl_eqns,"\t"*tsmn2*" ~ "*tm*"\n")
+        push!(_decl_eqns,"\tD("*fsmn*") ~ "*lv1*"\n")
+        push!(_decl_eqns,"\tD("*ssmn*") ~ "*lv2*"\n")
+        push!(_decl_eqns,"\tD("*tsmn*") ~ "*str*"\n")
+        return (tsmn)
+    end
 end
 
 
@@ -513,6 +654,7 @@ function eqn_maker!(name,eqn,_decl_eqns,_decl_vars,_tables)
     tsl=parsing_prep(eqn,_tables)
     nl=node_convert(tsl)
     ast=parser(nl)[1]
+    ifelse_seperate!(ast)
     str=matching(name,ast,_decl_eqns,_decl_vars,_tables)
     push!(_decl_eqns, "\t"*name*" ~ "*str*"\n")
     push!(_decl_vars, "@variables "*name*"(t)  [description = \""*name*"\"]\n")
@@ -521,25 +663,27 @@ end
 function eqn_decls(stocks_ind,eqn_ind,root,_decl_eqns,_decl_vars,_tables)
     for i=1:stocks_ind
         node=root[3][1][i]
-        n=length(node)
         name=get(attributes(node),"name",-1)
-        if n>3
-            if node[4].tag=="inflow"
-                inf=replace(node[4][1].value,Pair(" ","_"))
-                if n==5
-                    outf=replace(node[5][1].value,Pair(" ","_"))
-                    eqn="\tD("*name*") ~ "* inf*"-"*outf*"\n"
-                    push!(_decl_eqns,eqn)
-                else
-                    eqn="\tD("*name*") ~ "* inf*"\n"
-                    push!(_decl_eqns,eqn)
-                end
-            else 
-                outf=replace(node[4][1].value,Pair(" ","_"))
-                eqn="\tD("*name*") ~ -"* outf*"\n"
-                push!(_decl_eqns,eqn)
-            end
+        cdrns=node.children 
+        infs=Vector{String}()
+        outfs=Vector{String}()
+        for flow in cdrns
+            flow.tag == "inflow" && push!(infs, replace(flow[1].value,Pair(" ","_")))
+            flow.tag == "outflow" && push!(outfs, replace(flow[1].value,Pair(" ","_")))
         end
+        ni=length(infs)
+        no=length(outfs)
+        inf=""
+        outf=""
+        if ni>0  inf=infs[1] end
+        if no>0  outf=" - "*outfs[1] end
+        for i=2:ni
+            inf=inf*" + "*infs[i]
+        end
+        for i=2:no
+            outf=outf*" - "*outfs[i]
+        end
+        push!(_decl_eqns, "\tD("*name*") ~ "*inf*outf*"\n")
     end
     for i=(stocks_ind+1):eqn_ind
         name=get(attributes(root[3][1][i]),"name",-1)
@@ -585,7 +729,7 @@ using Plots
 #variables and parameters of the model (the variable/parameter name \"t\" is forbiden)
 @variables t
 D = Differential(t)
-@parameters"""
+@parameters """
 
 const file_stop ="""
     
@@ -598,10 +742,11 @@ sys= structural_simplify(sys)
 prob= ODEProblem(sys,[],("""
 
 function file_writer(_params,_inits,_tables,_ranges,_decl_vars,_decl_eqns,root)
-    reg=r"=\s*\w*"
+    reg=r"=\s*\w*.*\w*"
     dt=match(reg,root[2][3][1].value).match
     method=get(attributes(root[2]),"method",-1)
-    base_str= file_preamble*root[2][3][1].value*" [description = \"TIME_STEP, the dt of the model\"]\n"
+    base_str= file_preamble*root[2][3][1].value*" [description = \"TIME_STEP, the dt of the model\"]
+@variables t_plus(t) = TIME_STEP/2 [description= \"t_plus, variable used for pulse to avoid rounding errors\"]\n"
     for (k,v) in _params 
         str="@parameters "*string(k)*" = "*string(v)*" [description = \""*string(k)*"\"]\n"
         base_str = base_str * str
@@ -638,6 +783,7 @@ function file_writer(_params,_inits,_tables,_ranges,_decl_vars,_decl_eqns,root)
 
 "#définition des equations:
 eqs = [
+        t_plus ~ t + (TIME_STEP / 2)
     "
     for str in _decl_eqns 
         base_str= base_str *str
@@ -650,7 +796,7 @@ solved=solve(prob)
 end
 
 
-function file_generation(filepath::String="C:\\Users\\maelc\\OneDrive\\Documents\\stage\\New_parser_vensim_julia\\exemples\\Dice.xmile")
+function file_generation(filepath::String="C:\\Users\\maelc\\OneDrive\\Documents\\stage\\New_parser_vensim_julia\\exemples\\community corona 8.xmile")
     """
   This function generate the String of the ModelingToolkit model translated from julia. One just need to paste it into a blank file to make it work. 
     it works like this: using the XML.jl module, it parse the input xml (or xmile) file found at "filepath" into a tree; then, it seperate this tree into 4 sections: 
@@ -666,14 +812,27 @@ function file_generation(filepath::String="C:\\Users\\maelc\\OneDrive\\Documents
     _params = Dict{Symbol,Float64}()
     getparameters() = copy(_params)
     add_parameters!(root[3][1],tables_ind,len,_params)   
-    _inits = Dict{Symbol,Float64}() 
+    _inits = Dict{Symbol,String}() 
     getinitialisations()= copy(_inits) 
-    add_inits!(root[3][1],stocks_ind,_inits,_params)   
     _decl_vars=Vector{String}()
     _decl_eqns=Vector{String}() 
     _tables = Dict{Symbol,Tuple{Vararg{Float64}}}()
     _ranges = Dict{Symbol,Tuple{Vararg{Float64}}}()
+    add_inits!(root[3][1],stocks_ind,_inits,_decl_eqns,_decl_vars,_tables,_params)   
     table_maker(eqn_ind,tables_ind,root,_tables,_ranges)
     eqn_decls(stocks_ind, eqn_ind, root,_decl_eqns,_decl_vars,_tables)
     return (file_writer(_params,_inits,_tables,_ranges,_decl_vars,_decl_eqns,root))
+end
+
+function Vensim2MTK(filepath::String=".\\examples\\Dice.xmile",filename::String="Defaultstring"
+    ,overwrite::Bool=false)
+    if filename == "Defaultstring"
+        filename = splitext(basename(filepath))[1] * ".jl"
+    end
+    newfilepath =abspath("filename")
+    isfile(newfilepath) && !overwrite && return (print("File:"*filename*"already exist. please use another name for the file or use the option \"true\" for the \"overwrite\" argument"))
+    filedata=file_generation(filepath)
+    file = open(filename,"w")
+    write(file,filedata)
+    close(file)
 end

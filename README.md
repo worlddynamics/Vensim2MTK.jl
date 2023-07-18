@@ -1,9 +1,46 @@
 # Vensim.jl 
 
-The file "model_translation" contain the function "simple_file_writer" that will print the string of the translated model. 
-to use it, there is a need to change the filepath variable into the file path to the .xmile one want to parse. 
-NB: it is important that for the models containing no tables, one must be manually added after the equations definition and before the parameters, so that the parser can separate the information correctly.
+This package provides a function "Vensim2MTK" that can produce a Julia file of a model using ModelingToolkit from an exported Vensim model.
 
-2 example xmile file are provided: 
-- `Lokta.xmile`, a simple prey predation model; and `lokta.jl`, the resulting string when executing the file.
-- `Dice.xmile`, the model Dice, and the resulting string in `Dice.jl` (WIP).
+Usage of the function: 
+Vensim2MTK has 3 arguments:
+-filepath: the path to the vensim file that one wants to translate. Default to ./examples/Dice.xmile
+-filename: the name of the output file. default to the name of the inputfile with the extension ".jl" replacing ".xmile"
+-overwrite: boolean argument that decide if filename already exist, if it aborts or overwrite (true to overwrite)
+
+example: 
+
+Vensim.Vensim2MTK("path/to/a/vensim/model/model.xmile","MTKmodel",false) 
+
+Will take the model in model.xmile file and create the file MTKmodel.jl containing the model translated in ModelingToolkit(except if a file MTKmodel.jl already exists) 
+
+Current limitations: 
+
+-For a correct information handling, it is necessary to have a table in the model. that table can be blank.  
+list of Vensim functions currently implemented:
+
+"EXP"
+"LOG"
+"GAME"(will not cause an error but not implemented, as there is no interactive mode yet)
+"IFTHENELSE"
+"SMOOTH"
+"SMOOTHi"
+"STEP"
+"MAX"
+"MIN"
+"LN"
+"ABS"
+"COS"
+"ARCCOS"
+"SIN"
+"ARCSIN"
+"TAN"
+"ARCTAN"
+"GAMMA_LN"
+"MODULO"
+"SMOOTH3"
+"PULSE"
+"RAMP"
+"SMOOTH3i"
+"DELAY1"
+"DELAY1I"

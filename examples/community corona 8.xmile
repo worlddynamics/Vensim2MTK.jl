@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xmile version="1.0" xmlns="http://docs.oasis-open.org/xmile/ns/XMILE/v1.0">
+	<header>
+		<product version="1.0" lang="en">Vensim</product>
+		<vendor>Ventana Systems, Inc.</vendor>
+		<created>
+		</created>
+		<modified>
+		</modified>
+		<name>
+		</name>
+		<caption>
+		</caption>
+	</header>
+	<sim_specs method="RK4" time_units="day">
+		<start> 0</start>
+		<stop> 300</stop>
+		<dt> TIME_STEP=0.125</dt>
+	</sim_specs>
+	<model>
+		<variables>
+			<stock name="Deaths">
+				<units>people</units>
+				<doc>Cumulative infections resolving to death.</doc>
+					<eqn>
+					0
+					</eqn>
+					<inflow>
+					Dying
+					</inflow>
+			</stock>
+			<stock name="Exposed">
+				<units>people</units>
+				<doc>Exposed, asymptomatic population. As a simplification, assumed to be non-infectious, though there appears to be some infectivity for coronavirus in reality.</doc>
+					<eqn>
+					0
+					</eqn>
+					<inflow>
+					Infecting
+					</inflow>
+					<outflow>
+					Advancing
+					</outflow>
+			</stock>
+			<stock name="Infected">
+				<units>people</units>
+				<doc>Infected, symptomatic, infectious people.</doc>
+					<eqn>
+					0
+					</eqn>
+					<inflow>
+					Advancing
+					</inflow>
+					<inflow>
+					Importing Infected
+					</inflow>
+					<outflow>
+					Dying
+					</outflow>
+					<outflow>
+					Recovering
+					</outflow>
+			</stock>
+			<stock name="Recovered">
+				<units>people</units>
+				<doc>Cumulative recovered people. As a simplification, these are assumed immune - there is no reinfection.</doc>
+					<eqn>
+					0
+					</eqn>
+					<inflow>
+					Recovering
+					</inflow>
+			</stock>
+			<stock name="Susceptible">
+				<units>people</units>
+				<doc>Susceptible population.</doc>
+					<eqn>
+					Initial_Population
+					</eqn>
+					<outflow>
+					Infecting
+					</outflow>
+			</stock>
+			<aux name="Active_Infected">
+				<units>people</units>
+				<doc>Effective number of infected people, after adjusting for reduction in infectiousness from isolation, quarantine, and monitoring.</doc>
+					<eqn>
+	Infected*(1-Isolation_Effectiveness)					</eqn>
+			</aux>
+			<aux name="Advancing">
+				<units>people/day</units>
+				<doc></doc>
+					<eqn>
+	Exposed/Incubation_Time					</eqn>
+			</aux>
+			<aux name="Dying">
+				<units>people/day</units>
+				<doc></doc>
+					<eqn>
+	Infected*Fatality_Rate/Infection_Duration					</eqn>
+			</aux>
+			<aux name="Effect_of_Season">
+				<units>dmnl</units>
+				<doc>Effect of season on transmission - peak transmission occurs in winter; transmission in trough = (1-amplitude)</doc>
+					<eqn>
+	1-Seasonal_Amplitude+Seasonal_Amplitude*(1+COS( 2*3.14159*(Time-Peak_Season)/Seasonal_Period ))/2					</eqn>
+			</aux>
+			<aux name="Fatality_Rate">
+				<units>fraction</units>
+				<doc></doc>
+					<eqn>
+	Untreated_Fatality_Rate+(Treated_Fatality_Rate-Untreated_Fatality_Rate)/(1+Hospital_Strain^Hospital_Capacity_Sensitivity)					</eqn>
+			</aux>
+			<aux name="Fraction_Susceptible">
+				<units>fraction</units>
+				<doc>Fraction of initial population remaining susceptible.</doc>
+					<eqn>
+	Susceptible/Initial_Population					</eqn>
+			</aux>
+			<aux name="Hospital_Strain">
+				<units>Index</units>
+				<doc>Strain on hospital capacity, from ratio of serious cases to capacity.</doc>
+					<eqn>
+	Serious_Cases/Hospital_Capacity					</eqn>
+			</aux>
+			<aux name="Importing_Infected">
+				<units>people/day</units>
+				<doc>Import of infections into the region. This is a one-time introduction; there is no repeated challenge from an outside reservoir.</doc>
+					<eqn>
+	N_Imported_Infections*PULSE(Import_Time,TIME_STEP)/TIME_STEP					</eqn>
+			</aux>
+			<aux name="Infecting">
+				<units>people/day</units>
+				<doc></doc>
+					<eqn>
+	Active_Infected*Transmission_Rate*Effect_of_Season					</eqn>
+			</aux>
+			<aux name="Initial_Uncontrolled_Transmission_Rate">
+				<units>people/(day*person)</units>
+				<doc>Initial transmission rate, with 100% susceptibles and no controls.</doc>
+					<eqn>
+	R0/Infection_Duration					</eqn>
+			</aux>
+			<aux name="Isolation_Effectiveness">
+				<units>fraction</units>
+				<doc>Fractional reduction in infections gained by isolating infected persons.</doc>
+					<eqn>
+	SMOOTH3(STEP(Potential_Isolation_Effectiveness,Import_Time),Isolation_Reaction_Time)
+	/(1+Public_Health_Strain^Public_Health_Capacity_Sensitivity)					</eqn>
+			</aux>
+			<aux name="Public_Health_Strain">
+				<units>Index</units>
+				<doc>Strain on the public health system, expressed as the burden of infected relative to capacity.</doc>
+					<eqn>
+	Infected/Public_Health_Capacity					</eqn>
+			</aux>
+			<aux name="Recovering">
+				<units>people/day</units>
+				<doc></doc>
+					<eqn>
+	Infected/Infection_Duration*(1-Fatality_Rate)					</eqn>
+			</aux>
+			<aux name="Relative_Behavioral_Risk">
+				<units>dmnl</units>
+				<doc></doc>
+					<eqn>
+	SMOOTH3(1-STEP(Behavioral_Risk_Reduction,Import_Time),Behavior_Reaction_Time)					</eqn>
+			</aux>
+			<aux name="Relative_Contact_Density">
+				<units>dmnl</units>
+				<doc>Decline in contacts as the infection penetrates to less-connected portions of the social network. The effect is real, but the functional form is notional here. This would be a good focus for improvement.</doc>
+					<eqn>
+	1/(1+Contact_Density_Decline*(1-Fraction_Susceptible))					</eqn>
+			</aux>
+			<aux name="Serious_Cases">
+				<units>people</units>
+				<doc>Serious cases, requiring hospitalization.</doc>
+					<eqn>
+	Infected*Fraction_Requiring_Hospitalization					</eqn>
+			</aux>
+			<aux name="Transmission_Rate">
+				<units>fraction/day</units>
+				<doc>Fractional rate of transmission from non-isolated infected to the susceptible population.</doc>
+					<eqn>
+	Initial_Uncontrolled_Transmission_Rate*Relative_Behavioral_Risk*Fraction_Susceptible*Relative_Contact_Density					</eqn>
+			</aux>
+			<aux name="PARAMETERS_SEPARATOR">
+				<units>watt/(meter*meter)</units>
+				<doc>Managing the Global Commons, Table 4.9B, pg. 73.</doc>
+<gf>
+<xpts>0.0,0.0</xpts>
+<ypts>0.0,0.0</ypts>
+</gf>
+</aux>
+			<aux name="Behavior_Reaction_Time">
+				<units>day</units>
+				<doc>Time from first infection for behavioral risk reductions to be fully implemented.</doc>
+					<eqn>
+	20					</eqn>
+			</aux>
+			<aux name="Behavioral_Risk_Reduction">
+				<units>fraction</units>
+				<doc>Fractional reduction in risk from social distancing, increased handwashing, and other behavioral measures.</doc>
+					<eqn>
+	0					</eqn>
+			</aux>
+			<aux name="Contact_Density_Decline">
+				<units>dmnl</units>
+				<doc>Slope of decline in contacts as the infection penetrates to less-connected portions of the social network.</doc>
+					<eqn>
+	0					</eqn>
+			</aux>
+			<aux name="Fraction_Requiring_Hospitalization">
+				<units>fraction</units>
+				<doc>Fraction of infected who require hospitalization.</doc>
+					<eqn>
+	0.1					</eqn>
+			</aux>
+			<aux name="Hospital_Capacity">
+				<units>people</units>
+				<doc>Hospital capacity, expressed as number of serious infected cases that can be handled given beds, staff, etc.</doc>
+					<eqn>
+	100					</eqn>
+			</aux>
+			<aux name="Hospital_Capacity_Sensitivity">
+				<units>dmnl</units>
+				<doc>Sensitivity of care quality to capacity.</doc>
+					<eqn>
+	2					</eqn>
+			</aux>
+			<aux name="Import_Time">
+				<units>day</units>
+				<doc>Time of first infection.</doc>
+					<eqn>
+	10					</eqn>
+			</aux>
+			<aux name="Incubation_Time">
+				<units>day</units>
+				<doc>Time to onset of symptoms among exposed people.</doc>
+					<eqn>
+	5					</eqn>
+			</aux>
+			<aux name="Infection_Duration">
+				<units>day</units>
+				<doc>Duration of infection. As a simplification, this is the same for cases resulting in recovery and death, though in reality serious cases have longer duration.</doc>
+					<eqn>
+	7					</eqn>
+			</aux>
+			<aux name="Initial_Population">
+				<units>people</units>
+				<doc></doc>
+					<eqn>
+	100000					</eqn>
+			</aux>
+			<aux name="Isolation_Reaction_Time">
+				<units>day</units>
+				<doc>Time from first infected person needed to ramp up public health measures.</doc>
+					<eqn>
+	2					</eqn>
+			</aux>
+			<aux name="N_Imported_Infections">
+				<units>people</units>
+				<doc>Number of infections initially imported into the region.</doc>
+					<eqn>
+	3					</eqn>
+			</aux>
+			<aux name="Peak_Season">
+				<units>day</units>
+				<doc></doc>
+					<eqn>
+	0					</eqn>
+			</aux>
+			<aux name="Potential_Isolation_Effectiveness">
+				<units>fraction</units>
+				<doc>Effect of isolation and monitoring measures, absent strain on the system.</doc>
+					<eqn>
+	0					</eqn>
+			</aux>
+			<aux name="Public_Health_Capacity">
+				<units>people</units>
+				<doc>Capacity of the public health system to monitor, quarantine, and trace contacts. Expressed as number of infected people that can be managed.</doc>
+					<eqn>
+	1000					</eqn>
+			</aux>
+			<aux name="Public_Health_Capacity_Sensitivity">
+				<units>dmnl</units>
+				<doc>Sensitivity of public health performance to capacity constraint.</doc>
+					<eqn>
+	2					</eqn>
+			</aux>
+			<aux name="R0">
+				<units>dmnl</units>
+				<doc>Base reproduction ratio for the disease. Plausible range reported for coronavirus is about 2.2-3.9.</doc>
+					<eqn>
+	3.3					</eqn>
+			</aux>
+			<aux name="Seasonal_Amplitude">
+				<units>dmnl</units>
+				<doc>Amplitude of seasonal swings in transmission.</doc>
+					<eqn>
+	0					</eqn>
+			</aux>
+			<aux name="Seasonal_Period">
+				<units>days</units>
+				<doc>One year</doc>
+					<eqn>
+	365					</eqn>
+			</aux>
+			<aux name="Treated_Fatality_Rate">
+				<units>fraction</units>
+				<doc>Fatality rate with good health care.</doc>
+					<eqn>
+	0.01					</eqn>
+			</aux>
+			<aux name="Untreated_Fatality_Rate">
+				<units>fraction</units>
+				<doc>Fatality rate when minimally treated due to overwhelmed, chaotic health care.</doc>
+					<eqn>
+	0.04					</eqn>
+			</aux>
+		</variables>
+	</model>
+</xmile>
