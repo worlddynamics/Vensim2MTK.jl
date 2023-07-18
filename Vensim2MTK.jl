@@ -15,6 +15,15 @@ function is_a_table(node)
     tag(node[3])=="gf" 
 end
 
+function is_a_param(node)
+    try 
+        parse(Float64,node[3][1].value)
+        return true
+    catch 
+        return false
+    end
+end
+
 function ind(node)
     counter = 0
     stocks_ind = 0
@@ -25,12 +34,15 @@ function ind(node)
         if child.tag == "aux" && (stocks_ind + eqn_ind + tables_ind) == 0
             stocks_ind = counter 
             counter = counter + 1
-        elseif stocks_ind>0 && eqn_ind==0 && is_a_table(child) 
+        elseif stocks_ind>0 && eqn_ind==0 && (is_a_table(child) || is_a_param(child))
             eqn_ind = counter
             counter = counter+1
+            if is_a_param(child)
+                return (stocks_ind,eqn_ind,0,eqn_ind+1)
+            end
         elseif eqn_ind>0 && !is_a_table(child)
             tables_ind=counter
-            return (stocks_ind,eqn_ind,tables_ind)
+            return (stocks_ind,eqn_ind,tables_ind,tables_ind+1)
         else 
             counter = counter + 1
         end
@@ -43,9 +55,9 @@ function get_values(node)
     return (name,value)
 end
 
-function add_parameters!(node,tables_ind,len,_params)
+function add_parameters!(node,params_ind,len,_params)
     cdrns=children(node)
-    for i=(tables_ind+1):len
+    for i=(params_ind):len
         (name,value)=get_values(node[i])
         _params[name] = value
     end
@@ -808,10 +820,10 @@ function file_generation(filepath::String="C:\\Users\\maelc\\OneDrive\\Documents
     after this, the equations are changed from Vensim to ModelingToolkit syntax; and then the string is constructed. 
     """
     filename,doc,root,len=setup(filepath)    
-    (stocks_ind,eqn_ind,tables_ind)=ind(root[3][1])  
+    (stocks_ind,eqn_ind,tables_ind,params_ind)=ind(root[3][1])  
     _params = Dict{Symbol,Float64}()
     getparameters() = copy(_params)
-    add_parameters!(root[3][1],tables_ind,len,_params)   
+    add_parameters!(root[3][1],params_ind,len,_params)   
     _inits = Dict{Symbol,String}() 
     getinitialisations()= copy(_inits) 
     _decl_vars=Vector{String}()
