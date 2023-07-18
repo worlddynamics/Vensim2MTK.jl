@@ -24,7 +24,6 @@ This code will write in the file "MTKmodel.jl" an implementation in ModelingTool
 - "EXP" 
 - "LOG"
 - "GAME"(will not cause an error but not implemented, as there is no interactive mode yet)
-- "IFTHENELSE"
 - "SMOOTH"
 - "SMOOTHi"
 - "STEP"
