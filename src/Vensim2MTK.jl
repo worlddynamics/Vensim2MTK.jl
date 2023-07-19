@@ -764,8 +764,8 @@ function file_writer(_params,_inits,_tables,_ranges,_decl_vars,_decl_eqns,root)
 
 "
 eqs = [
-        t_plus ~ t + (TIME_STEP / 2)
-    "
+    t_plus ~ t + (TIME_STEP / 2)
+"
     for str in _decl_eqns 
         base_str= base_str *str
     end
@@ -805,7 +805,7 @@ function file_generation(filepath::String="C:\\Users\\maelc\\OneDrive\\Documents
     return (file_writer(_params,_inits,_tables,_ranges,_decl_vars,_decl_eqns,root))
 end
 
-function vensim2MTK(filepath::String="..\\examples\\Dice.xmile",filename::String="Defaultstring"
+function vensim2MTK(filepath::String=".\\examples\\lokta.xmile",filename::String="Defaultstring"
     ,overwrite::Bool=false)
     if filename == "Defaultstring"
         filename = splitext(basename(filepath))[1] * ".jl"
