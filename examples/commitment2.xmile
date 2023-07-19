@@ -92,17 +92,6 @@
 	+r_Moderate_evangelism*nB_fraction_holding_B_view*nAB_fraction_moderate
 	+u_Nonsocial_deradicalization*nB_fraction_holding_B_view					</eqn>
 			</aux>
-						<aux name="PARAMETERS_SEPARATOR">
-				<units>watt/(meter*meter)</units>
-				<doc>Managing the Global Commons, Table 4.9B, pg. 73.</doc>
-<gf>
-<xpts>0.0,0.0</xpts>
-<ypts>0.0,0.0</ypts>
-</gf>
-</aux>
-
-
-
 			<aux name="p_fraction_of_Ac_zealots">
 				<units>fraction</units>
 				<doc></doc>
