@@ -1,5 +1,3 @@
-
-
 using XML
 
 function setup(filepath)
@@ -56,7 +54,6 @@ function get_values(node)
 end
 
 function add_parameters!(node,params_ind,len,_params)
-    cdrns=children(node)
     for i=(params_ind):len
         (name,value)=get_values(node[i])
         _params[name] = value
