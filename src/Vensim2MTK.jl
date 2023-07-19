@@ -805,7 +805,7 @@ function file_generation(filepath::String="C:\\Users\\maelc\\OneDrive\\Documents
     return (file_writer(_params,_inits,_tables,_ranges,_decl_vars,_decl_eqns,root))
 end
 
-function vensim2MTK(filepath::String=".\\examples\\lokta.xmile",filename::String="Defaultstring"
+function vensim2MTK(filepath::String=".\\examples\\community corona 8.xmile",filename::String="Defaultstring"
     ,overwrite::Bool=false)
     if filename == "Defaultstring"
         filename = splitext(basename(filepath))[1] * ".jl"
