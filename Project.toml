@@ -1,5 +1,5 @@
 name = "Vensim2MTK"
-uuid = "b4cd1eb8-1e24-11e8-3319-93036a3eb9f3"
+uuid = "6539e830-265a-11ee-32ea-19fcbc6dc4d8"
 version = "0.1.0"
 authors = ["Maël Clergue <mael.clergue@gmail.com>, Emanuele Natale <emanuele.natale@cnrs.fr"]
 [deps]
