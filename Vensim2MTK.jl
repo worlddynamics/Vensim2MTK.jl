@@ -74,7 +74,6 @@ end
 
 
 function add_inits!(node,stocks_ind,_inits,_decl_eqns,_decl_vars,_tables,_params)
-    cdrns=children(node)
     for i=1:stocks_ind
         (name,value)= get_init_value(node[i],_decl_eqns,_decl_vars,_tables,_params)
         _inits[name] = value 
@@ -183,12 +182,11 @@ const _keywords2=("EXP","LOG","GAME","IFTHENELSE","SMOOTH","SMOOTHi","STEP","MAX
 "GAMMA_LN", "MODULO","RAMP",":AND:",":OR:","SMOOTH3","PULSE","SMOOTH3i","DELAY1","DELAY1I","SQRT"
 
 
-) #keywords, but if_then_else is called IFTHENELSE to match other tokens. this may happen to othe functions added later on.
+)
 const _one_arg_fcts=("EXP","LN","GAME","TABLE","COS","ARCCOS","SIN","ARCSIN","TAN","ARCTAN",
 "GAMMA_LN","SQRT")
 const _two_arg_fcts=("MAX","LOG","MIN","STEP","SMOOTH","MODULO","SMOOTH3","PULSE","DELAY1")
 const _three_arg_fcts=("IFTHENELSE","SMOOTHi","RAMP","DELAY1I")
-#depending on the number of arguments, function will be parsed differently. 
 
 
 mutable struct AstNode
@@ -213,7 +211,6 @@ function node_convert(tsl)
 end
 
 function sub_detect_fstpass(ns)
-    #parentheses
     ignore=0
     pass=0
     sub_start=0
@@ -243,7 +240,6 @@ end
 
 
 function sub_detect_sndpass(ns)
-    #one argument functions
     sub_start=0
     sub_end=0
     ignore=0
@@ -292,7 +288,6 @@ function sub_detect_thirdpass(ns)
 end
 
 function sub_detect_fourthpass(ns)
-    #3arguements functions
     sub = (start = [0, 0, 0], stop = [0, 0, 0])
     comma=0
     ignore=0
@@ -325,7 +320,6 @@ function sub_detect_fourthpass(ns)
 end
 
 function sub_detect_fifthpass(ns)
-    #detect logic 
     len=length(ns)
     for i=1:len 
         n=ns[i]
@@ -338,7 +332,6 @@ function sub_detect_fifthpass(ns)
 end
 
 function sub_detect_fifthpass_bis(ns)
-    #detect logic 
     len=length(ns)
     for i=1:len 
         n=ns[i]
@@ -394,14 +387,9 @@ function fifth_seventh_eighth_pass(sign_pos,nl)
     new_node=_make_node(token,data,vcat(lefthand,righthand))
     return ([new_node])
 end
-#the parser will work like this: 
-#first find the parentheses, then parse the inside of them
-#if the token list doesn't have parantheseses, find the functions, and parse their arguments. 
-#once all of these have been found, we parse the rest using simple operations priority. 
-#this means the string will be traversed a lot of time, but as they are of small size, the function execute decently fast.
+
 
 function parser(nl)
-    #first pass
     sub_start,sub_end=sub_detect_fstpass(nl)
     while sub_start>0
         parsed_node=parser(nl[sub_start+1:sub_end-1])
@@ -409,7 +397,6 @@ function parser(nl)
         nl=vcat(nl[1:sub_start-1],parsed_node,nl[sub_end+1:len])
         sub_start,sub_end=sub_detect_fstpass(nl)      
     end  
-    #snd pass 
     sub_start,sub_end=sub_detect_sndpass(nl)
     while sub_start>0
         token,data=nl[sub_start].token,nl[sub_start].data
@@ -419,7 +406,6 @@ function parser(nl)
         nl=vcat(nl[1:sub_start-1],[new_node],nl[sub_end+1:len])
         sub_start,sub_end=sub_detect_sndpass(nl)
     end
-    #third pass 
     
     sub_start1,sub_end1,sub_start2,sub_end2=sub_detect_thirdpass(nl)
     while sub_start1>0
@@ -430,7 +416,6 @@ function parser(nl)
         nl=vcat(nl[1:sub_start1-1],[new_node],nl[sub_end2+1:len])
         sub_start1,sub_end1,sub_start2,sub_end2=sub_detect_thirdpass(nl)    
     end
-    #fourth pass
     sub_start1,sub_end1,sub_start2,sub_end2,sub_start3,sub_end3=sub_detect_fourthpass(nl)
     while sub_start1>0
         token,data=nl[sub_start1].token,nl[sub_start1].data
@@ -440,7 +425,6 @@ function parser(nl)
         nl=vcat(nl[1:sub_start1-1],[new_node],nl[sub_end3+1:len])
         sub_start1,sub_end1,sub_start2,sub_end2,sub_start3,sub_end3=sub_detect_fourthpass(nl)        
     end
-    #fifth pass 
     sign_pos=sub_detect_fifthpass(nl)
     if sign_pos>0
         return fifth_seventh_eighth_pass(sign_pos,nl)
@@ -450,7 +434,6 @@ function parser(nl)
     if sign_pos>0
         return fifth_seventh_eighth_pass(sign_pos,nl)
     end
-    #sixth pass
     sign_pos=sub_detect_sixthpass(nl)
     if sign_pos>0
         token,data=nl[sign_pos].token,nl[sign_pos].data
@@ -465,17 +448,14 @@ function parser(nl)
         new_node=_make_node(token,data,vcat(lefthand,righthand))
         return ([new_node])
     end
-    #seventh pass
     sign_pos=sub_detect_seventhpass(nl)
     if sign_pos>0
         return fifth_seventh_eighth_pass(sign_pos,nl)
     end
-    #eighth pass
     sign_pos=sub_detect_eighthpass(nl)
     if sign_pos>0
         return fifth_seventh_eighth_pass(sign_pos,nl)
     end
-    #if none of those matched, then it is an ident: 
     if length(nl)==1 && nl[1].token =="IDENT"
         return ([_make_node(nl[1].token,nl[1].data)])
     end
@@ -505,7 +485,6 @@ function ifelse_seperate!(ast)
         ifelse_seperate!(as)
     end
 end
-#now that we have an AST of the eqn, we need to translate it into another string, but this time respecting julia syntax: 
 
 function matching(name,ast,_decl_eqns,_decl_vars,_tables)
     t,d,c=ast.token,ast.data,ast.children
@@ -701,7 +680,6 @@ function eqn_decls(stocks_ind,eqn_ind,root,_decl_eqns,_decl_vars,_tables)
     end
 end
 
-#now, let's make the tables:
 
 
 function table_maker(eqn_ind,tables_ind,root,_tables,_ranges)
@@ -733,7 +711,6 @@ using IfElse
 using SpecialFunctions
 using ModelingToolkit
 using DifferentialEquations
-using Plots 
 
 #variables and parameters of the model (the variable/parameter name \"t\" is forbiden)
 @variables t
@@ -741,10 +718,8 @@ D = Differential(t)
 @parameters """
 
 const file_stop ="""
-    
 ]
     
-#il faut maintenant définir le solveur: 
     
 @named sys= ODESystem(eqs)
 sys= structural_simplify(sys)
@@ -770,9 +745,6 @@ function file_writer(_params,_inits,_tables,_ranges,_decl_vars,_decl_eqns,root)
         base_str = base_str * str
     end
 
-    base_str= base_str *" 
-    
-#définition des tables:\n\n"
     for (k,v) in _tables
         tbl_str=string(k)*"_base =Vector{Float64}(["
         for vl in v 
@@ -790,7 +762,7 @@ function file_writer(_params,_inits,_tables,_ranges,_decl_vars,_decl_eqns,root)
 
     base_str= base_str*
 
-"#définition des equations:
+"
 eqs = [
         t_plus ~ t + (TIME_STEP / 2)
     "
@@ -799,14 +771,12 @@ eqs = [
     end
     base_str = base_str *file_stop*root[2][1][1].value*","*root[2][2][1].value*"), solver="*method*", dt"*dt*", dtmax"*dt*")
 solved=solve(prob)
-
-#plot(solved)
     "
 end
 
 
-function file_generation(filepath::String="C:\\Users\\maelc\\OneDrive\\Documents\\stage\\New_parser_vensim_julia\\exemples\\community corona 8.xmile")
-    """
+
+"""
   This function generate the String of the ModelingToolkit model translated from julia. One just need to paste it into a blank file to make it work. 
     it works like this: using the XML.jl module, it parse the input xml (or xmile) file found at "filepath" into a tree; then, it seperate this tree into 4 sections: 
         -the variables that will be derived in the model, those need initial values
@@ -815,7 +785,9 @@ function file_generation(filepath::String="C:\\Users\\maelc\\OneDrive\\Documents
         -and the parameters, along with their values. 
 
     after this, the equations are changed from Vensim to ModelingToolkit syntax; and then the string is constructed. 
-    """
+"""
+function file_generation(filepath::String="C:\\Users\\maelc\\OneDrive\\Documents\\stage\\New_parser_vensim_julia\\exemples\\community corona 8.xmile")
+
     filename,doc,root,len=setup(filepath)    
     (stocks_ind,eqn_ind,tables_ind,params_ind)=ind(root[3][1])  
     _params = Dict{Symbol,Float64}()
@@ -833,7 +805,7 @@ function file_generation(filepath::String="C:\\Users\\maelc\\OneDrive\\Documents
     return (file_writer(_params,_inits,_tables,_ranges,_decl_vars,_decl_eqns,root))
 end
 
-function Vensim2MTK(filepath::String=".\\examples\\Dice.xmile",filename::String="Defaultstring"
+function vensim2MTK(filepath::String="..\\examples\\Dice.xmile",filename::String="Defaultstring"
     ,overwrite::Bool=false)
     if filename == "Defaultstring"
         filename = splitext(basename(filepath))[1] * ".jl"
