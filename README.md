@@ -16,7 +16,7 @@ using Vensim
 filepath="path/to/a/vensim/model/model.xmile"
 filename="MTKmodel.jl"
 overwrite = false
-Vensim2MTK(filepath,filename,overwrite) 
+Vensim2MTK(filepath, filename, overwrite) 
 ```
 This code will write in the file `MTKmodel.jl` an implementation in ModelingToolkit of the model exported in `model.xmile` from the Vensim app.
 
