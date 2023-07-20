@@ -4,7 +4,7 @@ This package provides a function `Vensim2MTK` that can produce a Julia file of a
 
 Usage of the function: 
 The function takes 3 arguments:
-- `filepath`: the path to the vensim file that one wants to translate. Default to ./examples/Dice.xmile.
+- `filepath`: the path to the vensim file that one wants to translate. Default to `./examples/Dice.xmile`.
 - `filename`: the name of the output file. Default to the name of the input file with the extension `.jl` replacing `.xmile`.
 - `overwrite`: boolean argument that indicate in the case of the file already existing, if the function aborts or overwrite it(true to overwrite).
 
@@ -34,13 +34,13 @@ DICE, lokta, commitment and community corona 8. Here is a quick explenation of e
 
 - `commitment` is a model that is based on [an Arxiv paper](https://doi.org/10.48550/arXiv.1209.3546). The model was published on [this blog post](https://metasd.com/2012/09/encouraging-moderation/).
 
-- `community corona 8` is a model representing the evolution of the coronavirus in a community, and the effectivness of some method. See [this blog post](https://metasd.com/2020/03/community-coronavirus-model-bozeman/)
+- `community corona 8` is a model representing the evolution of the coronavirus in a community, and the effectivness of some method. See [this blog post](https://metasd.com/2020/03/community-coronavirus-model-bozeman/).
 ## List of Vensim functions currently implemented
 
 - `if_then_else`
 - `EXP` 
 - `LOG`
-- `GAME`(will not cause an error but not implemented, as there is no interactive mode yet)
+- `GAME` (will not cause an error but not implemented, as there is no interactive mode yet)
 - `SMOOTH`
 - `SMOOTHi`
 - `STEP`
