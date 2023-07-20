@@ -62,3 +62,9 @@ DICE, lokta, commitment and community corona 8. Here is a quick explenation of e
 - `SMOOTH3i`
 - `DELAY1`
 - `DELAY1I`
+
+
+## Limitation of the module
+
+
+  If some variables need to be initialised by other variables that are not directly initialised, the program automatically initialises them with a default value (42). It is necessary to replace these with values that are at least not too far away from the real ones; just so that the model runs correctly without failing. It is then possible to obtain the true initial value and replace these arbitrary values with those calculated by ModelingToolkit; then re-run the model, obtaining from now on the real values for the whole model. 
