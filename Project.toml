@@ -1,3 +1,8 @@
+name = "Vensim2MTK"
+uuid = "6539e830-265a-11ee-32ea-19fcbc6dc4d8"
+version = "0.1.0"
+authors = ["Maël Clergue <mael.clergue@gmail.com>, Emanuele Natale <emanuele.natale@cnrs.fr"]
+
 [deps]
 DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
