@@ -712,7 +712,6 @@ using SpecialFunctions
 using ModelingToolkit
 using DifferentialEquations
 
-#variables and parameters of the model (the variable/parameter name \"t\" is forbiden)
 @variables t
 D = Differential(t)
 @parameters """
