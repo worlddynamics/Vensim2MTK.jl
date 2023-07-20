@@ -1,4 +1,4 @@
-module Vensim
+module Vensim2MTK
 
 using XML
 
