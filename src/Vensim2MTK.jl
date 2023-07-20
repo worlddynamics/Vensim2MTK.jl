@@ -1,9 +1,9 @@
-module Vensim
+module Vensim2MTK
 
 using XML
 
 include("functions.jl")
 
-export Vensim2MTK
+export vensim2MTK
 
 end
