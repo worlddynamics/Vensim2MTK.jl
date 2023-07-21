@@ -711,7 +711,7 @@ using IfElse
 using SpecialFunctions
 using ModelingToolkit
 using DifferentialEquations
-
+using DataInterpolation
 @variables t
 D = Differential(t)
 @parameters """
