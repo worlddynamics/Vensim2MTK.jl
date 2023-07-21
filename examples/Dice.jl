@@ -2,7 +2,7 @@ using IfElse
 using SpecialFunctions
 using ModelingToolkit
 using DifferentialEquations
-using Datainterpolation
+using Datainterpolations
 
 #variables and parameters of the model (the variable/parameter name "t" is forbiden)
 @variables t
