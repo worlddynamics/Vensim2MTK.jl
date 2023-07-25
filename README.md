@@ -65,6 +65,18 @@ DICE, lokta, commitment and community corona 8. Here is a quick explanation of e
 
 If some variables need to be initialised by other variables that are not directly initialised, the program automatically initialises them with a default value (42). It is necessary to replace these with values that are at least not too far away from the real ones; just so that the model runs correctly without failing. It is then possible to obtain the true initial value and replace these arbitrary values with those calculated by ModelingToolkit; then re-run the model, obtaining from now on the real values for the whole model. 
 
-## DOI 
-
+## How to cite this work 
+```
+@software{pierluigi_crescenzi_2022_7093581,
+  author       = {Emanuele Natale and
+                  Maël Clergue},
+  title        = {Vensim2MTK.jl: v0.1.0},
+  month        = july,
+  year         = 2023,
+  publisher    = {Zenodo},
+  version      = {v0.1.0},
+  doi          = {10.5281/zenodo.8179079},
+  url          = {https://doi.org/10.5281/zenodo.8179079}
+}
+```
 [![DOI](https://zenodo.org/badge/662031882.svg)](https://zenodo.org/badge/latestdoi/662031882)
