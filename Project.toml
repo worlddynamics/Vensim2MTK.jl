@@ -1,6 +1,6 @@
 name = "Vensim2MTK"
 uuid = "6539e830-265a-11ee-32ea-19fcbc6dc4d8"
-version = "0.1.0"
+version = "0.1"
 authors = ["Maël Clergue <mael.clergue@gmail.com>, Emanuele Natale <emanuele.natale@cnrs.fr"]
 
 [deps]
@@ -10,3 +10,12 @@ IfElse = "615f187c-cbe4-4ef1-ba3b-2fcf58d6d173"
 ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 XML = "72c71f33-b9b6-44de-8c94-c961784809e2"
+
+[compat]
+julia = "1.9"
+DataInterpolations = "4.0.1"
+DifferentialEquations = "7.8.0"
+IfElse = "0.1.1"
+ModelingToolkit = "8.62.0"
+SpecialFunctions = "2.3.0"
+XML = "0.3.0"

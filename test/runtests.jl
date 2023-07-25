@@ -5,6 +5,7 @@ for filepath in filepaths
     vensim2MTK(filepath, splitext(basename(filepath))[1] * ".jl",true)
 end
 @testset verbose=true "Test output type" begin
+
     @test isa(Dice.solved, ModelingToolkit.ODESystem)
     @test isa(Lokta.solved, ModelingToolkit.ODESystem)
     @test isa(commitment.solved, ModelingToolkit.ODESystem)
