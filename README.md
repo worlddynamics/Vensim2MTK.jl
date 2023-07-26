@@ -67,7 +67,7 @@ If some variables need to be initialised by other variables that are not directl
 
 ## How to cite this work 
 ```
-@software{pierluigi_crescenzi_2022_7093581,
+@software{emanuele_natale_vensim2mtk_2023,
   author       = {Emanuele Natale and
                   Maël Clergue},
   title        = {Vensim2MTK.jl: v0.1.0},
