@@ -32,6 +32,8 @@ DICE, lokta, commitment and community corona 8. Here is a quick explanation of e
 - `commitment` is a model that is based on [an ArXiv paper](https://doi.org/10.48550/arXiv.1209.3546). The model was published on [this blog post](https://metasd.com/2012/09/encouraging-moderation/).
 
 - `community corona 8` is a model representing the evolution of the coronavirus in a community, and the effectiveness of some method. See [this blog post](https://metasd.com/2020/03/community-coronavirus-model-bozeman/).
+
+
 ## List of Vensim functions currently implemented
 
 - `if_then_else`
@@ -64,6 +66,10 @@ DICE, lokta, commitment and community corona 8. Here is a quick explanation of e
 ## Issue #12 
 
 If some variables need to be initialised by other variables that are not directly initialised, the program automatically initialises them with a default value (42). It is necessary to replace these with values that are at least not too far away from the real ones; just so that the model runs correctly without failing. It is then possible to obtain the true initial value and replace these arbitrary values with those calculated by ModelingToolkit; then re-run the model, obtaining from now on the real values for the whole model. 
+
+## Issue #33 
+It is necessary to make sure the model that is to be parsed does not contain special characters in it's variable name. the special characters mentioned are: 
+`"`,`-`,`(`,`)`,`+`,`/`,`*`,`^`,`=`,`!`,`{`,`[`,`]`,`}` and `,`. 
 
 ## How to cite this work 
 ```
