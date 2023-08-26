@@ -706,7 +706,6 @@ function table_maker(eqn_ind, tables_ind, root, _tables, _ranges)
     end
 end
 
-
 const file_preamble = """
  using IfElse
  using SpecialFunctions
@@ -718,7 +717,7 @@ const file_preamble = """
  @parameters """
 
 const file_stop = """
- ]
+]
      
      
  @named sys= ODESystem(eqs)

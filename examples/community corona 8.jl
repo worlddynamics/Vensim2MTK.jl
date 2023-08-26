@@ -63,10 +63,6 @@ D = Differential(t)
 @variables Relative_Contact_Density(t)  [description = "Relative_Contact_Density"]
 @variables Serious_Cases(t)  [description = "Serious_Cases"]
 @variables Transmission_Rate(t)  [description = "Transmission_Rate"]
-PARAMETERS_SEPARATOR_base =Vector{Float64}([0.0,0.0,])
-PARAMETERS_SEPARATOR_ranges = Vector{Float64}([0.0,0.0,])
-PARAMETERS_SEPARATOR(t)=LinearInterpolation(PARAMETERS_SEPARATOR_base,PARAMETERS_SEPARATOR_ranges)(t)
-@register_symbolic PARAMETERS_SEPARATOR(t)
 
 
 eqs = [
