@@ -1,4 +1,5 @@
 # Vensim.jl 
+[![DOI](https://zenodo.org/badge/662031882.svg)](https://zenodo.org/badge/latestdoi/662031882)
 
 This package provides a function `Vensim2MTK` that can produce a Julia file of a model using ModelingToolkit from an exported Vensim model.
 
@@ -85,4 +86,3 @@ It is necessary to make sure the model that is to be parsed does not contain spe
   url          = {https://doi.org/10.5281/zenodo.8179079}
 }
 ```
-[![DOI](https://zenodo.org/badge/662031882.svg)](https://zenodo.org/badge/latestdoi/662031882)
