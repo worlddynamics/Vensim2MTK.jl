@@ -2,12 +2,12 @@ using IfElse
 using SpecialFunctions
 using ModelingToolkit
 using DifferentialEquations
+using DataInterpolations
 
-#variables and parameters of the model (the variable/parameter name "t" is forbiden)
 @variables t
 D = Differential(t)
 @parameters TIME_STEP=0.125 [description = "TIME_STEP, the dt of the model"]
-@variables t_plus(t) = TIME_STEP/2 [description= "t_plus, variable used for pulse to avoid rounding errors"]
+     @variables t_plus(t) = TIME_STEP/2 [description= "t_plus, variable used for pulse to avoid rounding errors"]
 @parameters Fraction_Requiring_Hospitalization = 0.1 [description = "Fraction_Requiring_Hospitalization"]
 @parameters Untreated_Fatality_Rate = 0.04 [description = "Untreated_Fatality_Rate"]
 @parameters Contact_Density_Decline = 0.0 [description = "Contact_Density_Decline"]
@@ -63,11 +63,15 @@ D = Differential(t)
 @variables Relative_Contact_Density(t)  [description = "Relative_Contact_Density"]
 @variables Serious_Cases(t)  [description = "Serious_Cases"]
 @variables Transmission_Rate(t)  [description = "Transmission_Rate"]
+PARAMETERS_SEPARATOR_base =Vector{Float64}([0.0,0.0,])
+PARAMETERS_SEPARATOR_ranges = Vector{Float64}([0.0,0.0,])
+PARAMETERS_SEPARATOR(t)=LinearInterpolation(PARAMETERS_SEPARATOR_base,PARAMETERS_SEPARATOR_ranges)(t)
+@register_symbolic PARAMETERS_SEPARATOR(t)
 
 
-eqs = [
-    t_plus ~ t + (TIME_STEP / 2)
-	D(Deaths) ~ Dying
+    eqs = [
+        t_plus ~ t + (TIME_STEP / 2)
+    	D(Deaths) ~ Dying
 	D(Exposed) ~ Infecting - Advancing
 	D(Infected) ~ Advancing + Importing_Infected - Dying - Recovering
 	D(Recovered) ~ Recovering
@@ -102,10 +106,10 @@ eqs = [
 	Serious_Cases ~ (Infected) * (Fraction_Requiring_Hospitalization)
 	Transmission_Rate ~ (Initial_Uncontrolled_Transmission_Rate) * ((Relative_Behavioral_Risk) * ((Fraction_Susceptible) * (Relative_Contact_Density)))
 ]
-    
-    
-@named sys= ODESystem(eqs)
-sys= structural_simplify(sys)
-prob= ODEProblem(sys,[],(0,300), solver=RK4, dt=0.125, dtmax=0.125)
-solved=solve(prob)
-    
+     
+     
+ @named sys= ODESystem(eqs)
+ sys= structural_simplify(sys)
+ prob= ODEProblem(sys,[],(0,300), solver=RK4, dt=0.125, dtmax=0.125)
+                     solved=solve(prob)
+                         

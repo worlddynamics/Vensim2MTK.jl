@@ -711,6 +711,7 @@ const file_preamble = """
  using SpecialFunctions
  using ModelingToolkit
  using DifferentialEquations
+ using DataInterpolations
  
  @variables t
  D = Differential(t)

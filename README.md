@@ -16,7 +16,7 @@ using Vensim2MTK
 filepath= "path/to/a/vensim/model/model.xmile"
 filename= "MTKmodel.jl"
 overwrite = false
-Vensim2MTK(filepath, filename, overwrite) 
+vensim2MTK(filepath, filename, overwrite) 
 ```
 This code will write in the file `MTKmodel.jl` an implementation in ModelingToolkit of the model exported in `model.xmile` from the Vensim app.
 
@@ -24,11 +24,11 @@ This code will write in the file `MTKmodel.jl` an implementation in ModelingTool
 ## Examples of models used
 
 There are currently 4 models used as examples for the parser: 
-DICE, lokta, commitment and community corona 8. Here is a quick explanation of each as well as where we found them: 
+DICE, lotka, commitment and community corona 8. Here is a quick explanation of each as well as where we found them: 
 
 - `Dice` is William Nordhaus’ Dice model; the implementation of it was found [here](https://metasd.com/2010/06/dice/) and is the `DICE-heur-7-PLE.mdl` version (as Vensim has some issues with exporting some models as xmile files, some version of the models used may not work. Usually, the .mdl works with no issue).
 
-- `lokta` is the simple Lokta-Voltera predation model, found [here](http://www.shodor.org/refdesk/BioPortal/model/VSpredatorPrey?level=advanced).
+- `lotka` is the simple Lotka-Voltera predation model, found [here](http://www.shodor.org/refdesk/BioPortal/model/VSpredatorPrey?level=advanced).
 
 - `commitment` is a model that is based on [an ArXiv paper](https://doi.org/10.48550/arXiv.1209.3546). The model was published on [this blog post](https://metasd.com/2012/09/encouraging-moderation/).
 
@@ -69,7 +69,7 @@ DICE, lokta, commitment and community corona 8. Here is a quick explanation of e
 If some variables need to be initialised by other variables that are not directly initialised, the program automatically initialises them with a default value (42). It is necessary to replace these with values that are at least not too far away from the real ones; just so that the model runs correctly without failing. It is then possible to obtain the true initial value and replace these arbitrary values with those calculated by ModelingToolkit; then re-run the model, obtaining from now on the real values for the whole model. 
 
 ## Issue #33 
-It is necessary to make sure the model that is to be parsed does not contain special characters in it's variable name. the special characters mentioned are: 
+It is necessary to make sure the model that is to be parsed does not contain special characters in it's variable name. The special characters mentioned are: 
 `"`,`-`,`(`,`)`,`+`,`/`,`*`,`^`,`=`,`!`,`{`,`[`,`]`,`}` and `,`. 
 
 ## How to cite this work 
