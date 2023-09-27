@@ -16,7 +16,7 @@ using Vensim2MTK
 filepath= "path/to/a/vensim/model/model.xmile"
 filename= "MTKmodel.jl"
 overwrite = false
-Vensim2MTK(filepath, filename, overwrite) 
+vensim2MTK(filepath, filename, overwrite) 
 ```
 This code will write in the file `MTKmodel.jl` an implementation in ModelingToolkit of the model exported in `model.xmile` from the Vensim app.
 
@@ -69,7 +69,7 @@ DICE, lokta, commitment and community corona 8. Here is a quick explanation of e
 If some variables need to be initialised by other variables that are not directly initialised, the program automatically initialises them with a default value (42). It is necessary to replace these with values that are at least not too far away from the real ones; just so that the model runs correctly without failing. It is then possible to obtain the true initial value and replace these arbitrary values with those calculated by ModelingToolkit; then re-run the model, obtaining from now on the real values for the whole model. 
 
 ## Issue #33 
-It is necessary to make sure the model that is to be parsed does not contain special characters in it's variable name. the special characters mentioned are: 
+It is necessary to make sure the model that is to be parsed does not contain special characters in it's variable name. The special characters mentioned are: 
 `"`,`-`,`(`,`)`,`+`,`/`,`*`,`^`,`=`,`!`,`{`,`[`,`]`,`}` and `,`. 
 
 ## How to cite this work 
