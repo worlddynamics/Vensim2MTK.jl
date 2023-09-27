@@ -4,11 +4,10 @@ using ModelingToolkit
 using DifferentialEquations
 using DataInterpolations
 
-#variables and parameters of the model (the variable/parameter name "t" is forbiden)
 @variables t
 D = Differential(t)
 @parameters TIME_STEP=10 [description = "TIME_STEP, the dt of the model"]
-@variables t_plus(t) = TIME_STEP/2 [description= "t_plus, variable used for pulse to avoid rounding errors"]
+     @variables t_plus(t) = TIME_STEP/2 [description= "t_plus, variable used for pulse to avoid rounding errors"]
 @parameters Output_in_1965 = 8.519e12 [description = "Output_in_1965"]
 @parameters Red_Cost_Scale = 0.0686 [description = "Red_Cost_Scale"]
 @parameters A_UO_Heat_Cap = 44.248 [description = "A_UO_Heat_Cap"]
@@ -74,7 +73,7 @@ D = Differential(t)
 @variables CO2_Net_Emiss(t)  [description = "CO2_Net_Emiss"]
 @variables CO2_Rad_Forcing(t)  [description = "CO2_Rad_Forcing"]
 @variables CO2_Storage(t)  [description = "CO2_Storage"]
-@variables TEMPVAR_Cons_Growth_Rate(t) = 0 [description = "TEMPVAR_Cons_Growth_Rate, created by the \"SMOOTH\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution"]
+@variables TEMPVAR_Cons_Growth_Rate(t) = 42 [description = "TEMPVAR_Cons_Growth_Rate, created by the \"SMOOTH\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution"]
 @variables TEMPVARSMOOTHED_Cons_Growth_Rate(t) = TEMPVAR_Cons_Growth_Rate [description = "TEMPVARSMOOTHED_Cons_Growth_Rate, created by the \"SMOOTH\" function or an afiliate."]
 @variables Cons_Growth_Rate(t)  [description = "Cons_Growth_Rate"]
 @variables Consumption(t)  [description = "Consumption"]
@@ -87,7 +86,7 @@ D = Differential(t)
 @variables Discounted_Utility(t)  [description = "Discounted_Utility"]
 @variables DO_Heat_Cap(t)  [description = "DO_Heat_Cap"]
 @variables Expected_Return(t)  [description = "Expected_Return"]
-@variables TEMPVAR_Expected_Return_Trend(t) = -0.00054 [description = "TEMPVAR_Expected_Return_Trend, created by the \"SMOOTH\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution"]
+@variables TEMPVAR_Expected_Return_Trend(t) = 42 [description = "TEMPVAR_Expected_Return_Trend, created by the \"SMOOTH\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution"]
 @variables TEMPVARSMOOTHED_Expected_Return_Trend(t) = TEMPVAR_Expected_Return_Trend [description = "TEMPVARSMOOTHED_Expected_Return_Trend, created by the \"SMOOTH\" function or an afiliate"]
 @variables Expected_Return_Trend(t)  [description = "Expected_Return_Trend"]
 @variables Fact_Prod_Gr_Rt_Decline_Rt(t)  [description = "Fact_Prod_Gr_Rt_Decline_Rt"]
@@ -114,7 +113,7 @@ D = Differential(t)
 @variables Reduction_Costs(t)  [description = "Reduction_Costs"]
 @variables Reference_CO2_Emissions(t)  [description = "Reference_CO2_Emissions"]
 @variables Reference_Output(t)  [description = "Reference_Output"]
-@variables TEMPVAR_Smoothed_Return(t) =  0.0789017 [description = "TEMPVAR_Smoothed_Return, created by the \"SMOOTH\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution"]
+@variables TEMPVAR_Smoothed_Return(t) = 42 [description = "TEMPVAR_Smoothed_Return, created by the \"SMOOTH\" function or an afiliate. Value is false the first execution, find the real initial value after the first execution"]
 @variables TEMPVARSMOOTHED_Smoothed_Return(t) = TEMPVAR_Smoothed_Return [description = "TEMPVARSMOOTHED_Smoothed_Return, created by the \"SMOOTH\" function or an afiliate"]
 @variables Smoothed_Return(t)  [description = "Smoothed_Return"]
 @variables Temp_Diff(t)  [description = "Temp_Diff"]
@@ -127,9 +126,9 @@ Other_GHG_Rad_Forcing(t)=LinearInterpolation(Other_GHG_Rad_Forcing_base,Other_GH
 @register_symbolic Other_GHG_Rad_Forcing(t)
 
 
-eqs = [
-    t_plus ~ t + (TIME_STEP / 2)
-    D(Atmos_UOcean_Temp) ~ Chg_A_UO_Temp
+    eqs = [
+        t_plus ~ t + (TIME_STEP / 2)
+    	D(Atmos_UOcean_Temp) ~ Chg_A_UO_Temp
 	D(Capital) ~ Investment - Depreciation
 	D(CO2_in_Atmos) ~ CO2_Net_Emiss - CO2_Storage
 	D(CO2_Intens_Decline_Rt) ~  - CO2_Intens_Dec_Rt_Decline_Rt
@@ -202,10 +201,10 @@ eqs = [
 	uncontrolled_emissions ~ (Reference_Output) * (CO2_Intensity_of_Output)
 	Utility ~ (Utility_Coeff) * (IfElse.ifelse((Rate_of_Inequal_Aversion) == (1),( log((Consumption_per_Cap) / (Ref_Cons_per_Cap))),(((((Consumption_per_Cap) / (Ref_Cons_per_Cap)) ^ ((1) - (Rate_of_Inequal_Aversion))) - (1)) / ((1) - (Rate_of_Inequal_Aversion)))))
 ]
-    
-    
-@named sys= ODESystem(eqs)
-sys= structural_simplify(sys)
-prob= ODEProblem(sys,[],(1965,2305), solver=RK4, dt=10, dtmax=10)
-solved=solve(prob)
-    
+     
+     
+ @named sys= ODESystem(eqs)
+ sys= structural_simplify(sys)
+ prob= ODEProblem(sys,[],(1965,2305), solver=RK4, dt=10, dtmax=10)
+                     solved=solve(prob)
+                         
