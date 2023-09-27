@@ -11,7 +11,7 @@ The function takes 3 arguments:
 
 Example of use:
 ```julia
-using Vensim
+using Vensim2MTK
 
 filepath= "path/to/a/vensim/model/model.xmile"
 filename= "MTKmodel.jl"
